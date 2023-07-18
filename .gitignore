@@ -1,0 +1,10 @@
+# Environment
+.env
+
+# Compilation and optimization
+__pycache__/
+*.py[cod]
+*.asv
+
+# Logs
+*.log
