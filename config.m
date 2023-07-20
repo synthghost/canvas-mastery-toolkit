@@ -5,6 +5,6 @@ function out = config()
     % short-form "python" or "python3" commands, so this way is safer.
     out.python_command = '/usr/local/bin/python3';
 
-    % Absolute path to the Python sidecar script (quiz_generator.py).
-    out.python_path = '/path/to/quiz_generator.py';
+    % Absolute path to the Python script (quiz_generator.py).
+    out.python_script = '/path/to/quiz_generator.py';
 end

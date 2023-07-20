@@ -8,12 +8,15 @@ classdef CanvasQuizGenerator < handle
     end
 
     properties (Access = protected)
+        python_command = '';
+        python_script = '';
         output_path
     end
 
     methods
-        function self = CanvasQuizGenerator(output_path, title, description)
+        function self = CanvasQuizGenerator(config, output_path, title, description)
             arguments
+                config struct
                 output_path {mustBeText}
                 title {mustBeText} = ''
                 description {mustBeText} = ''
@@ -22,6 +25,14 @@ classdef CanvasQuizGenerator < handle
             self.output_path = output_path;
             self.title = title;
             self.description = description;
+
+            if isfield(config, 'python_command') && ~isempty(config.python_command)
+                self.python_command = config.python_command;
+            end
+
+            if isfield(config, 'python_script') && ~isempty(config.python_script)
+                self.python_script = config.python_script;
+            end
         end
 
 
@@ -75,14 +86,15 @@ classdef CanvasQuizGenerator < handle
                 python_flags {mustBeText} = ''
             end
 
+            assert(strlength(self.python_command), 'Python command must be defined in config.m.')
+            assert(strlength(self.python_script), 'Python script must be defined in config.m.')
+
             % Make sure output is saved
             self.save();
 
-            c = config();
-
             % Run Python script to upload quiz data to Canvas
             system(sprintf('%s "%s" %s "%s"', ...
-                c.python_command, c.python_path, python_flags, self.output_path));
+                self.python_command, self.python_script, python_flags, self.output_path));
         end
     end
 

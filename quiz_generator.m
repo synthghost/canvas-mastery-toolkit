@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% QUIZ GENERATOR
+% CANVAS QUIZ GENERATOR
 % Demo
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -18,7 +18,7 @@ output_path = '/path/to/output.json';
 % since the quiz will be removed once the questions are fully uploaded.
 quiz_title = 'MATLAB-Generated Quiz';
 
-G = CanvasQuizGenerator(output_path, quiz_title);
+G = CanvasQuizGenerator(config(), output_path, quiz_title);
 
 
 
