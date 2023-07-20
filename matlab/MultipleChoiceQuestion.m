@@ -20,8 +20,9 @@ classdef MultipleChoiceQuestion < MultipleAnswersQuestion
 
             self.add_correct_answers({{text, comment}});
         end
+    end
 
-
+    methods (Hidden)
         function add_correct_answers(self, array)
             assert(length(array) == 1 & ~self.hasCorrectAnswer, ...
                 'Multiple choice questions can only have one correct answer')

@@ -10,6 +10,7 @@ classdef Question < handle & matlab.mixin.Heterogeneous
 
     properties (Access = protected)
         supported_types = {
+            'fill_in_multiple_blanks_question',
             'matching_question',
             'multiple_answers_question',
             'multiple_choice_question',

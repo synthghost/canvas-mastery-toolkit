@@ -1,8 +1,8 @@
-classdef DropdownsQuestion < Question
+classdef BlanksQuestion < Question
 
     methods
-        function self = DropdownsQuestion(text, varargin)
-            self.init('multiple_dropdowns_question', text, varargin{:});
+        function self = BlanksQuestion(text, varargin)
+            self.init('fill_in_multiple_blanks_question', text, varargin{:});
         end
 
 
@@ -14,34 +14,31 @@ classdef DropdownsQuestion < Question
                 comment {mustBeText} = ''
             end
 
-            self.add_answers(blank_id, {{text, comment}}, 100);
+            self.add_correct_answers(blank_id, {{text, comment}});
         end
 
 
-        function add_incorrect_answers(self, blank_id, array)
-            self.add_answers(blank_id, array, 0);
-        end
-    end
-
-    methods (Access = protected)
-        function add_answers(self, blank_id, array, weight)
+        function add_correct_answers(self, blank_id, array)
             arguments
                 self
                 blank_id {mustBeText}
                 array (:,1) cell
-                weight {mustBeNonnegative,mustBeScalarOrEmpty}
             end
 
             % Iterate backward to force memory pre-allocation
             for i = length(array):-1:1
-                list(i,1) = self.make_answer(blank_id, array{i}, weight);
+                list(i,1) = self.make_answer(blank_id, array{i});
             end
 
             self.answers = [self.answers; list];
         end
+    end
 
+    methods (Access = protected)
+        function A = make_answer(self, blank_id, data)
+            % Answers specified for blanks questions are always correct
+            weight = 100;
 
-        function A = make_answer(self, blank_id, data, weight)
             if ischar(data) || (iscell(data) && length(data) < 2)
                 A = FillAnswer(blank_id, data, weight, '');
                 return

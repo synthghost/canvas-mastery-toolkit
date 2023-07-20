@@ -1,4 +1,4 @@
-classdef DropdownsAnswer < handle
+classdef FillAnswer < handle
 
     properties (SetAccess = protected)
         blank_id
@@ -6,7 +6,7 @@ classdef DropdownsAnswer < handle
     end
 
     methods
-        function self = DropdownsAnswer(blank_id, text, weight, comment)
+        function self = FillAnswer(blank_id, text, weight, comment)
             if nargin == 0
                 return
             end
