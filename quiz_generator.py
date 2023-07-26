@@ -65,13 +65,13 @@ limit = int(args.question_limit[0]) if args.question_limit else -1
 delete = bool(args.delete_quiz)
 
 if args.data_path:
-  output_path = args.data_path[0]
+  data_path = args.data_path[0]
 
-if not output_path:
-  print('Specify an output path via command line arguments')
+if not data_path:
+  print('Specify a data path via command line arguments')
   exit()
 
-print(f'Using file {output_path} with a limit of {limit}')
+print(f'Using file {data_path} with a limit of {limit}')
 
 if dry:
   print('*** DRY RUN ***')
@@ -85,7 +85,7 @@ print('Course:', course)
 
 
 # Read the generated data as JSON.
-with open(output_path, 'r') as file:
+with open(data_path, 'r') as file:
   data = json.load(file)
 
 if not 'questions' in data:

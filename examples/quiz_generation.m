@@ -6,10 +6,10 @@ clear all; clc
 
 addpath('/path/to/canvas-mastery-toolkit');
 
-output_path = '/path/to/output.json';
+data_path = '/path/to/data.json';
 quiz_title = 'MATLAB-Generated Quiz';
 
-G = quizzes.Generator(output_path, quiz_title);
+G = quizzes.Generator(data_path, quiz_title);
 
 
 
@@ -82,7 +82,7 @@ Q4.add_incorrect_answers({
 
 Q4.shuffle_answers();
 
-Q4.add_incorrect_answer('I don''t know!', figure_path='/path/to/figure_6.png');
+Q4.add_incorrect_answer('I don''t know! {figure}', figure_path='/path/to/figure_6.png');
 
 
 

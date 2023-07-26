@@ -10,18 +10,18 @@ classdef Generator < handle
     end
 
     properties (Access = protected)
-        output_path
+        data_path
     end
 
     methods
-        function self = Generator(output_path, title, description)
+        function self = Generator(data_path, title, description)
             arguments
-                output_path {mustBeText}
+                data_path {mustBeText}
                 title {mustBeText} = ''
                 description {mustBeText} = ''
             end
 
-            self.output_path = output_path;
+            self.data_path = data_path;
             self.title = title;
             self.description = description;
         end
@@ -68,11 +68,11 @@ classdef Generator < handle
 
 
         function save(self)
-            % Write generator output to file.
-            fid = fopen(self.output_path, 'wt');
+            % Write generator data to file.
+            fid = fopen(self.data_path, 'wt');
             fprintf(fid, jsonencode(self));
             fclose(fid);
-            fprintf('Output saved to %s\n', self.output_path);
+            fprintf('Data saved to %s\n', self.data_path);
         end
 
 
@@ -88,12 +88,12 @@ classdef Generator < handle
             assert(isfield(config, 'python_command') && strlength(cfg.python_command), ...
                 'Missing Python command (PYTHON_COMMAND).')
 
-            % Make sure output is saved.
+            % Make sure data is saved.
             self.save();
 
             % Run Python to upload quiz data to Canvas.
             system(sprintf('%s "%s" %s "%s"', ...
-                cfg.python_command, cfg.python_uploader, python_flags, self.output_path));
+                cfg.python_command, cfg.python_uploader, python_flags, self.data_path));
         end
     end
 
