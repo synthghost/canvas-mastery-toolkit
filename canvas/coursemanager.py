@@ -26,7 +26,7 @@ class CourseManager:
         print('Invalid Canvas access token.')
         pass
 
-    # Fall back to environmental variable, if possible, or ask the user for input otherwise
+    # Fall back to environmental variable, if possible, or ask the user for input otherwise.
     token = config['canvas_api_token'] or getpass.getpass('Enter new Canvas access token:')
 
     try:

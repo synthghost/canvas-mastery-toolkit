@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 
 ###########################################################################
 # QUIZ GENERATOR
-# To be executed from MATLAB
+# To be executed from MATLAB.
 ###########################################################################
 
 
@@ -37,20 +37,20 @@ def latexrepl(match):
   if isinstance(match, re.Match):
     match = match.groups()[0]
 
-  # Double-encode URLs to match Canvas behavior
+  # Double-encode URLs to match Canvas behavior.
   encoded = urllib.parse.quote(urllib.parse.quote(match))
 
-  # Generate Canvas equation image HTML
+  # Generate Canvas equation image HTML.
   return f'<img class="equation_image" title="{match}" src="/equation_images/{encoded}?scale=1" alt="LaTeX: {match}" data-equation-content="{match}" data-ignore-a11y-check="" />'
 
-# Parse LaTeX strings enclosed by $
+# Parse LaTeX strings enclosed by $.
 def latex(text):
   p = re.compile('\${1,2}(.*?)\${1,2}')
 
   return p.sub(latexrepl, text)
 
 
-# Gather command line arguments from MATLAB
+# Gather command line arguments from MATLAB.
 parser = ArgumentParser(description='Canvas Mastery Toolkit - MATLAB Quiz Generator Sidecar')
 
 parser.add_argument('--dry-run', action='store_true', help='perform data manipulation but do not post to Canvas')
@@ -76,7 +76,7 @@ print(f'Using file {output_path} with a limit of {limit}')
 if dry:
   print('*** DRY RUN ***')
 
-# Connect to Canvas course
+# Connect to Canvas course.
 manager = CourseManager()
 # manager.set_logging(logging.DEBUG)
 course = manager.get_course()
@@ -84,7 +84,7 @@ course = manager.get_course()
 print('Course:', course)
 
 
-# Read the generated data as JSON
+# Read the generated data as JSON.
 with open(output_path, 'r') as file:
   data = json.load(file)
 
@@ -100,12 +100,12 @@ folder = manager.get_folder() if has_figures else None
 
 print('Folder:', folder)
 
-# Validate that all figures are valid files
+# Validate that all figures are valid files.
 if has_figures:
   validate_figure_paths(data['questions'])
 
 
-# Create a blank quiz
+# Create a blank quiz.
 if not dry:
   quiz = course.create_quiz({
     'title': data.get('title') or f'Generated Quiz {uuid.uuid4()}',
@@ -130,23 +130,23 @@ def upload_figure(folder, abs_path):
   return f'<img id="{response["id"]}" src="{url}" alt="" />'
 
 
-# Keep count for limiting purposes
+# Keep count for limiting purposes.
 count = 0
 
-# Iterate over data to prepare for Canvas API
+# Iterate over data to prepare for Canvas API.
 for q in data['questions']:
   count += 1
 
-  # Stop adding questions past the given limit
+  # Stop adding questions past the given limit.
   if limit > 0 and count >= limit:
     break
 
-  # Don't process questions without answers
+  # Don't process questions without answers.
   if not 'answers' in q:
     print('Skipping question without answers.')
     continue
 
-  # Upload file first to get an image tag
+  # Upload file first to get an image tag.
   q_figure = upload_figure(folder, q.get('figure_path'))
 
   question = {
@@ -222,18 +222,18 @@ for q in data['questions']:
     print(question)
     continue
 
-  # Post the quiz
+  # Post the quiz.
   quiz.create_question(question=question)
 
 if not dry:
   print('Questions uploaded.')
 
 
-# Delete the quiz, leaving the questions in the "Unfiled" bank
+# Delete the quiz, leaving the questions in the "Unfiled" bank.
 if not dry and delete:
   quiz.delete()
   print('Quiz deleted.')
 
 
-# Return to MATLAB
+# Return to MATLAB.
 print('Done!')

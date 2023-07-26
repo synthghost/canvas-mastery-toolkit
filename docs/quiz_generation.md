@@ -3,7 +3,7 @@
 The MATLAB script `examples/quiz_generation.m` demonstrates how to generate quiz questions and upload them to Canvas. New generators can be created in much the same way, but require at least the following boilerplate.
 
 ```matlab
-% Add the toolkit to the MATLAB path
+% Add the toolkit to the MATLAB path.
 addpath('/path/to/canvas-mastery-toolkit');
 
 % The absolute path where the data output file will be saved. This is
@@ -12,23 +12,23 @@ addpath('/path/to/canvas-mastery-toolkit');
 % this value for each quiz should you wish to keep a record of the output.
 output_path = '/path/to/output.json';
 
-% Create a quiz generator
+% Create a quiz generator.
 G = quizzes.Generator(output_path);
 
-% Add questions and answers
+% Add questions and answers.
 % Q = G.add...
 
-% Upload to Canvas
+% Upload to Canvas.
 G.upload();
 ```
 
 In some cases, it may be convenient to use a dynamic absolute output path that matches the filename and/or folder of the specific generator script.
 
 ```matlab
-% Matching filename in an unrelated folder
+% Matching filename in an unrelated folder.
 output_path = ['/path/to/', mfilename(), '.json'];
 
-% Matching filename in the current folder
+% Matching filename in the current folder.
 [this_folder, this_file] = fileparts(mfilename('fullpath'));
 output_path = [this_folder, '/', this_file, '.json']
 ```
@@ -67,10 +67,10 @@ Each method is described in more detail below.
 Answers within a particular question can be shuffled. The order of questions added to the generator can also be shuffled, though this has no affect on their answers. Shuffling can be done at any point, leaving subsequent additions unshuffled.
 
 ```matlab
-% Shuffle answers in question Q
+% Shuffle answers in question Q.
 Q.shuffle_answers();
 
-% Shuffle questions in generator G
+% Shuffle questions in generator G.
 G.shuffle_questions();
 ```
 
@@ -90,7 +90,7 @@ The argument `python_flags` can take any number of three possible flags which ar
 The quiz can also be saved without uploading.
 
 ```matlab
-% Save to file only
+% Save to file only.
 G.save();
 ```
 

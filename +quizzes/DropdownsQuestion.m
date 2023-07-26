@@ -34,7 +34,7 @@ classdef DropdownsQuestion < quizzes.Question
 
             assert(length(array) > 0, 'Answer array cannot be empty.')
 
-            % Iterate backward to force memory pre-allocation
+            % Iterate backward to force memory pre-allocation.
             for i = length(array):-1:1
                 list(i,1) = self.make_answer(blank_id, array{i}, weight);
             end

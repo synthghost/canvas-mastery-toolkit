@@ -68,7 +68,7 @@ classdef Generator < handle
 
 
         function save(self)
-            % Write generator output to file
+            % Write generator output to file.
             fid = fopen(self.output_path, 'wt');
             fprintf(fid, jsonencode(self));
             fclose(fid);
@@ -82,16 +82,16 @@ classdef Generator < handle
                 python_flags {mustBeText} = ''
             end
 
-            % Load configuration struct from config.m
+            % Load configuration struct from config.m.
             cfg = config();
 
             assert(isfield(config, 'python_command') && strlength(cfg.python_command), ...
                 'Missing Python command (PYTHON_COMMAND).')
 
-            % Make sure output is saved
+            % Make sure output is saved.
             self.save();
 
-            % Run Python to upload quiz data to Canvas
+            % Run Python to upload quiz data to Canvas.
             system(sprintf('%s "%s" %s "%s"', ...
                 cfg.python_command, cfg.python_uploader, python_flags, self.output_path));
         end
@@ -101,7 +101,7 @@ classdef Generator < handle
         function Q = add_question(self, Q)
             assert(endsWith(class(Q), 'Question'), 'Data must be a Question type.')
 
-            % Add new question to end of collection
+            % Add new question to end of collection.
             self.questions{end+1,1} = Q;
         end
     end

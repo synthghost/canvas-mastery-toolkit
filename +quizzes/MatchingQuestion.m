@@ -32,7 +32,7 @@ classdef MatchingQuestion < quizzes.Question
 
             assert(length(array) > 0, 'Answer array cannot be empty.')
 
-            % Iterate backward to force memory pre-allocation
+            % Iterate backward to force memory pre-allocation.
             for i = length(array):-1:1
                 data(i,1) = self.make_answer(array{i});
             end
@@ -57,7 +57,7 @@ classdef MatchingQuestion < quizzes.Question
 
             args = quizzes.pad_char_array(data, 4);
 
-            % Check for figures
+            % Check for figures.
             if length(args{4}) > 0
                 self.generator.enable_figures();
             end

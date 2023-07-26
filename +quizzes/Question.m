@@ -28,7 +28,7 @@ classdef Question < handle & matlab.mixin.Heterogeneous
         end
     end
 
-    % Sealed methods cannot be redeclared by subclasses
+    % Sealed methods cannot be redeclared by subclasses.
     methods (Sealed, Access = protected)
         function init(self, G, type, text, args)
             arguments

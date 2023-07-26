@@ -15,14 +15,14 @@ G = quizzes.Generator(output_path, quiz_title);
 
 %% Matching
 
-% Add a question with a figure, which is inserted in place of "{figure}"
+% Add a question with a figure, which is inserted in place of "{figure}".
 Q1 = G.add_matching_question('<p>Match the parts of the horse.</p><p>{figure}</p>', ...
     points=4, figure_path='/path/to/figure_1.png');
 
 Q1.add_answer_pair('Torso {figure}', 'Barrel', figure_path='/path/to/figure_2.png');
 Q1.add_answer_pair('Front half', 'Forehand', comment_when_incorrect='Don''t feel bad! This is a hard one.');
 
-% Add more
+% Add more pairs.
 Q1.add_answer_pairs({
     {'Back half', 'Haunches'},
     {'Foot {figure}', 'Hoof', '', '/path/to/figure_3.png'},
@@ -69,7 +69,7 @@ Q4 = G.add_multiple_choice_question('<p>Are horses bigger than rabbits?</p>');
 
 Q4.add_correct_answer('Usually, but not always {figure}', comment='Incredibly, this is true!', figure_path='/path/to/figure_5.png');
 
-% Trying to add more correct answers throws an error
+% Trying to add more correct answers throws an error.
 % Q4.add_correct_answer('There can''t be two right answers!');
 
 Q4.add_incorrect_answers({

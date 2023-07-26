@@ -60,7 +60,7 @@ classdef MultipleAnswersQuestion < quizzes.Question
 
             assert(length(array) > 0, 'Answer array cannot be empty.')
 
-            % Iterate backward to force memory pre-allocation
+            % Iterate backward to force memory pre-allocation.
             for i = length(array):-1:1
                 data(i,1) = self.make_answer(array{i}, weight);
             end
@@ -72,7 +72,7 @@ classdef MultipleAnswersQuestion < quizzes.Question
         function A = make_answer(self, data, weight)
             args = quizzes.pad_char_array(data, 3);
 
-            % Check for figures
+            % Check for figures.
             if length(args{3}) > 0
                 self.generator.enable_figures();
             end
