@@ -1,8 +1,8 @@
-classdef BlanksQuestion < Question
+classdef BlanksQuestion < quizzes.Question
 
     methods
-        function self = BlanksQuestion(text, varargin)
-            self.init('fill_in_multiple_blanks_question', text, varargin{:});
+        function self = BlanksQuestion(G, text, varargin)
+            self.init(G, 'fill_in_multiple_blanks_question', text, varargin{:});
         end
 
 
@@ -25,12 +25,14 @@ classdef BlanksQuestion < Question
                 array (:,1) cell
             end
 
+            assert(length(array) > 0, 'Answer array cannot be empty.')
+
             % Iterate backward to force memory pre-allocation
             for i = length(array):-1:1
                 list(i,1) = self.make_answer(blank_id, array{i});
             end
 
-            self.answers = [self.answers; list];
+            self.merge(list);
         end
     end
 
@@ -39,12 +41,8 @@ classdef BlanksQuestion < Question
             % Answers specified for blanks questions are always correct
             weight = 100;
 
-            if ischar(data) || (iscell(data) && length(data) < 2)
-                A = FillAnswer(blank_id, data, weight, '');
-                return
-            end
-
-            A = FillAnswer(blank_id, char(data(1)), weight, char(data(2)));
+            args = quizzes.pad_char_array(data, 2);
+            A = quizzes.FillAnswer(blank_id, weight, args{:});
         end
     end
 end

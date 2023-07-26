@@ -1,18 +1,20 @@
 classdef MultipleAnswersAnswer < handle
 
     properties (SetAccess = protected)
-        text; weight; comment
+        weight; text; comment
+        figure_path
     end
 
     methods
-        function self = MultipleAnswersAnswer(text, weight, comment)
+        function self = MultipleAnswersAnswer(weight, text, comment, figure_path)
             if nargin == 0
                 return
             end
 
-            self.text = text;
             self.weight = min(max(0, weight), 100);
+            self.text = text;
             self.comment = comment;
+            self.figure_path = figure_path;
         end
     end
 end

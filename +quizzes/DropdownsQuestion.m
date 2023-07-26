@@ -1,8 +1,8 @@
-classdef DropdownsQuestion < Question
+classdef DropdownsQuestion < quizzes.Question
 
     methods
-        function self = DropdownsQuestion(text, varargin)
-            self.init('multiple_dropdowns_question', text, varargin{:});
+        function self = DropdownsQuestion(G, text, varargin)
+            self.init(G, 'multiple_dropdowns_question', text, varargin{:});
         end
 
 
@@ -32,22 +32,20 @@ classdef DropdownsQuestion < Question
                 weight {mustBeNonnegative,mustBeScalarOrEmpty}
             end
 
+            assert(length(array) > 0, 'Answer array cannot be empty.')
+
             % Iterate backward to force memory pre-allocation
             for i = length(array):-1:1
                 list(i,1) = self.make_answer(blank_id, array{i}, weight);
             end
 
-            self.answers = [self.answers; list];
+            self.merge(list);
         end
 
 
         function A = make_answer(self, blank_id, data, weight)
-            if ischar(data) || (iscell(data) && length(data) < 2)
-                A = FillAnswer(blank_id, data, weight, '');
-                return
-            end
-
-            A = FillAnswer(blank_id, char(data(1)), weight, char(data(2)));
+            args = quizzes.pad_char_array(data, 2);
+            A = quizzes.FillAnswer(blank_id, weight, args{:});
         end
     end
 end

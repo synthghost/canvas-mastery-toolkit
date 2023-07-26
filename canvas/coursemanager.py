@@ -4,7 +4,7 @@ import logging
 from os import path
 from config import config
 from canvasapi import Canvas
-from canvasapi.course import Course
+from canvasapi.course import Course, Folder
 from canvasapi.exceptions import Forbidden, InvalidAccessToken, ResourceDoesNotExist, Unauthorized
 
 class CourseManager:
@@ -38,7 +38,18 @@ class CourseManager:
       raise KeyError('Invalid Canvas access token. Try again.')
 
 
-  def get_course(self, course_id=None) -> Course:
+  def set_logging(self, level: int = logging.WARNING) -> None:
+    logger = logging.getLogger('canvasapi')
+    handler = logging.FileHandler(path.join(config['canvas_logs_dir'], 'canvas.log'))
+    formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s')
+
+    handler.setLevel(level)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(level)
+
+
+  def get_course(self, course_id = None) -> Course:
     id = course_id or config['canvas_course_id']
 
     if not id:
@@ -50,15 +61,19 @@ class CourseManager:
       raise KeyError('Invalid Canvas course ID (CANVAS_COURSE_ID).')
 
 
-  def set_logging(self, level=logging.WARNING) -> None:
-    logger = logging.getLogger('canvasapi')
-    handler = logging.FileHandler(path.join(config['canvas_logs_dir'], 'canvas.log'))
-    formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s')
+  def get_folder(self, course = None, folder_id = None) -> Folder:
+    id = folder_id or config['canvas_folder_id']
 
-    handler.setLevel(level)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(level)
+    if not id:
+      raise KeyError('Missing Canvas folder ID (CANVAS_FOLDER_ID).')
+
+    if course and not isinstance(course, Canvas):
+      raise TypeError('Course argument must be of type canvasapi.Course.')
+
+    try:
+      return course.get_folder(id) if course else self.canvas.get_folder(id)
+    except (Forbidden, ResourceDoesNotExist, Unauthorized, TypeError):
+      raise KeyError('Invalid Canvas folder ID (CANVAS_FOLDER_ID).')
 
 
   def _init_without_keyring(self) -> None:

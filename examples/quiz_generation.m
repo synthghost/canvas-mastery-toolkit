@@ -1,39 +1,31 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CANVAS QUIZ GENERATOR
-% Demo
+% CANVAS QUIZ GENERATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-close all; clear all; clc
+clear all; clc
 
-addpath('matlab');
+addpath('/path/to/canvas-mastery-toolkit');
 
-% The absolute path where the data output file will be saved. This is
-% passed to Python, which will complain if it can't access the file, so
-% an absolute path is recommended. Optionally, it may be useful to change
-% this value for each quiz should you wish to keep a record of the output.
 output_path = '/path/to/output.json';
-
-% The title to give the quiz when uploading to Canvas. If --delete-quiz
-% is given as a Python flag later, this title is effectively meaningless
-% since the quiz will be removed once the questions are fully uploaded.
 quiz_title = 'MATLAB-Generated Quiz';
 
-G = CanvasQuizGenerator(config(), output_path, quiz_title);
+G = quizzes.Generator(output_path, quiz_title);
 
 
 
 %% Matching
 
-Q1 = G.add_matching_question('<p>Match the parts of the horse.</p>', points=4);
+% Add a question with a figure, which is inserted in place of "{figure}"
+Q1 = G.add_matching_question('<p>Match the parts of the horse.</p><p>{figure}</p>', ...
+    points=4, figure_path='/path/to/figure_1.png');
 
-Q1.add_answer_pair('Torso', 'Barrel');
-Q1.add_answer_pair('Ankle', 'Fetlock', 'Don''t feel bad! This is a hard one.');
+Q1.add_answer_pair('Torso {figure}', 'Barrel', figure_path='/path/to/figure_2.png');
+Q1.add_answer_pair('Front half', 'Forehand', comment_when_incorrect='Don''t feel bad! This is a hard one.');
 
 % Add more
 Q1.add_answer_pairs({
-    {'Front half', 'Forehand'},
     {'Back half', 'Haunches'},
-    {'Foot', 'Hoof'},
+    {'Foot {figure}', 'Hoof', '', '/path/to/figure_3.png'},
     {'Nose', 'Muzzle', 'Horses make all kinds of funny faces!'},
 });
 
@@ -48,7 +40,11 @@ Q2 = G.add_multiple_answers_question('<p>Which kinds of horses are real?</p>', p
 
 Q2.add_correct_answers({'Warmblood', 'Draft', 'Iberian', 'Arabian', 'Icelandic'});
 
-Q2.add_incorrect_answers({'Pegasus', 'Unicorn', 'Centaur'});
+Q2.add_incorrect_answers({
+    'Pegasus',
+    {'Unicorn {figure}', '', '/path/to/figure_4.png'},
+    'Centaur',
+});
 
 Q2.shuffle_answers();
 
@@ -69,27 +65,24 @@ Q3.add_correct_answers('blank2', {
 
 %% Multiple Choice
 
-Q4 = G.add_multiple_choice_question('<p>Are horses bigger than rabbits?</p>', points=1);
+Q4 = G.add_multiple_choice_question('<p>Are horses bigger than rabbits?</p>');
 
-Q4.add_correct_answer('Usually, but not always', 'Incredibly, this is true!');
+Q4.add_correct_answer('Usually, but not always {figure}', comment='Incredibly, this is true!', figure_path='/path/to/figure_5.png');
 
-% This one throws an error. Intentional!
-% Q1.add_correct_answer('There can''t be two right answers!');
+% Trying to add more correct answers throws an error
+% Q4.add_correct_answer('There can''t be two right answers!');
 
 Q4.add_incorrect_answers({
     {'Always! Why even ask?!', 'An understandable instinct, but it''s not always the case'},
     'Never! Have you seen rabbits? They''re huge!',
 });
 
-% Add more
-Q4.add_incorrect_answers({'The jury''s still out on this one'});
-
 % How best to do this?
-% Q2.subset_answers()
+% Q4.subset_answers()
 
 Q4.shuffle_answers();
 
-Q4.add_catchall_answer('I don''t know!');
+Q4.add_incorrect_answer('I don''t know!', figure_path='/path/to/figure_6.png');
 
 
 
@@ -119,10 +112,10 @@ Q5.shuffle_answers();
 
 %% Numerical
 
-Q6 = G.add_numerical_question('<p>At what age (in years) is a horse considered a yearling?</p>', points=1);
+Q6 = G.add_numerical_question('<p>At what age (in years) is a horse considered a yearling? {figure}</p>', figure_path='/path/to/figure_7.png');
 
-% Q5.add_exact_answer(1, 0.5);
-% Q5.add_precision_answer(1.000, 3);
+% Q6.add_exact_answer(1, 0.5);
+% Q6.add_precision_answer(1.000, 3);
 Q6.add_range_answer(0.8, 1.2, 'Nice job!');
 
 
@@ -135,5 +128,4 @@ Q6.add_range_answer(0.8, 1.2, 'Nice job!');
 % G.save();
 
 % Save and upload to Canvas.
-% Possible Python flags: --dry-run, --question-limit [num], --delete-quiz
 G.upload('--dry-run');

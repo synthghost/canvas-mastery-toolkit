@@ -1,22 +1,21 @@
-classdef CanvasQuizGenerator < handle
+classdef Generator < handle
 
     properties (SetAccess = protected)
         title; description
 
+        has_figures = false;
+
         % The collection of generated questions.
-        questions
+        questions = {};
     end
 
     properties (Access = protected)
-        python_command = '';
-        python_script = '';
         output_path
     end
 
     methods
-        function self = CanvasQuizGenerator(config, output_path, title, description)
+        function self = Generator(output_path, title, description)
             arguments
-                config struct
                 output_path {mustBeText}
                 title {mustBeText} = ''
                 description {mustBeText} = ''
@@ -25,49 +24,46 @@ classdef CanvasQuizGenerator < handle
             self.output_path = output_path;
             self.title = title;
             self.description = description;
-
-            if isfield(config, 'python_command') && ~isempty(config.python_command)
-                self.python_command = config.python_command;
-            end
-
-            if isfield(config, 'python_script') && ~isempty(config.python_script)
-                self.python_script = config.python_script;
-            end
         end
 
 
         function Q = add_matching_question(self, text, varargin)
-            Q = self.add_question(MatchingQuestion(text, varargin{:}));
+            Q = self.add_question(quizzes.MatchingQuestion(self, text, varargin{:}));
         end
 
 
         function Q = add_multiple_answers_question(self, text, varargin)
-            Q = self.add_question(MultipleAnswersQuestion(text, varargin{:}));
+            Q = self.add_question(quizzes.MultipleAnswersQuestion(self, text, varargin{:}));
         end
 
 
         function Q = add_multiple_blanks_question(self, text, varargin)
-            Q = self.add_question(BlanksQuestion(text, varargin{:}));
+            Q = self.add_question(quizzes.BlanksQuestion(self, text, varargin{:}));
         end
 
 
         function Q = add_multiple_choice_question(self, text, varargin)
-            Q = self.add_question(MultipleChoiceQuestion(text, varargin{:}));
+            Q = self.add_question(quizzes.MultipleChoiceQuestion(self, text, varargin{:}));
         end
 
 
         function Q = add_multiple_dropdowns_question(self, text, varargin)
-            Q = self.add_question(DropdownsQuestion(text, varargin{:}));
+            Q = self.add_question(quizzes.DropdownsQuestion(self, text, varargin{:}));
         end
 
 
         function Q = add_numerical_question(self, text, varargin)
-            Q = self.add_question(NumericalQuestion(text, varargin{:}));
+            Q = self.add_question(quizzes.NumericalQuestion(self, text, varargin{:}));
         end
 
 
         function shuffle_questions(self)
             self.questions = self.questions(randperm(length(self.questions)));
+        end
+
+
+        function enable_figures(self)
+            self.has_figures = true;
         end
 
 
@@ -86,15 +82,18 @@ classdef CanvasQuizGenerator < handle
                 python_flags {mustBeText} = ''
             end
 
-            assert(strlength(self.python_command), 'Python command must be defined in config.m.')
-            assert(strlength(self.python_script), 'Python script must be defined in config.m.')
+            % Load configuration struct from config.m
+            cfg = config();
+
+            assert(isfield(config, 'python_command') && strlength(cfg.python_command), ...
+                'Missing Python command (PYTHON_COMMAND).')
 
             % Make sure output is saved
             self.save();
 
-            % Run Python script to upload quiz data to Canvas
+            % Run Python to upload quiz data to Canvas
             system(sprintf('%s "%s" %s "%s"', ...
-                self.python_command, self.python_script, python_flags, self.output_path));
+                cfg.python_command, cfg.python_uploader, python_flags, self.output_path));
         end
     end
 
@@ -103,7 +102,7 @@ classdef CanvasQuizGenerator < handle
             assert(endsWith(class(Q), 'Question'), 'Data must be a Question type.')
 
             % Add new question to end of collection
-            self.questions = [self.questions; Q];
+            self.questions{end+1,1} = Q;
         end
     end
 end

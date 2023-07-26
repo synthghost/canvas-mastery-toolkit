@@ -1,18 +1,55 @@
-# Documentation
+# Canvas Quiz Generation
 
-## MATLAB Quiz Generator
-
-Generating Canvas quizzes in MATLAB revolves around the `CanvasQuizGenerator` class. A generator object must be instantiated to begin adding questions. To do so requires at least two arguments: a configuration structure and a data output file path.
+The MATLAB script `examples/quiz_generation.m` demonstrates how to generate quiz questions and upload them to Canvas. New generators can be created in much the same way, but require at least the following boilerplate.
 
 ```matlab
-G = CanvasQuizGenerator(config(), 'path/to/output.json');
+% Add the toolkit to the MATLAB path
+addpath('/path/to/canvas-mastery-toolkit');
+
+% The absolute path where the data output file will be saved. This is
+% passed to Python, which will complain if it can't access the file, so
+% an absolute path is recommended. Optionally, it may be useful to change
+% this value for each quiz should you wish to keep a record of the output.
+output_path = '/path/to/output.json';
+
+% Create a quiz generator
+G = quizzes.Generator(output_path);
+
+% Add questions and answers
+% Q = G.add...
+
+% Upload to Canvas
+G.upload();
 ```
 
-The function `config()` is defined in `config.m` and provides the necessary structure to configure MATLAB to upload quizzes to Canvas automatically using Python. If you do not wish to connect MATLAB to Python, pass an empty structure as the first argument, instead.
+In some cases, it may be convenient to use a dynamic absolute output path that matches the filename and/or folder of the specific generator script.
 
 ```matlab
-G = CanvasQuizGenerator([], 'path/to/output.json');
+% Matching filename in an unrelated folder
+output_path = ['/path/to/', mfilename(), '.json'];
+
+% Matching filename in the current folder
+[this_folder, this_file] = fileparts(mfilename('fullpath'));
+output_path = [this_folder, '/', this_file, '.json']
 ```
+
+The quiz's title and rich-text description can optionally be set as part of the boilerplate.
+
+```matlab
+G = quizzes.Generator(output_path, 'Quiz Title', 'Description text');
+```
+
+Note that if `--delete-quiz` is given as a Python flag during upload, the title and description are effectively meaningless since the quiz will be removed once the questions are fully uploaded.
+
+## Creating a generator
+
+Generating Canvas quizzes in MATLAB revolves around the `Generator` class of the `quizzes` package. A generator object must be instantiated with a data output file path to begin adding questions.
+
+```matlab
+G = quizzes.Generator('path/to/output.json');
+```
+
+The output path determines where MATLAB will save a JSON representation of the assembled quiz. This data is passed to Python to upload to Canvas.
 
 Once instantiated, the generator provides methods to add quiz questions of several types. These methods all require one argument (the rich question text) and optionally take two others (the question name and number of points possible).
 
@@ -44,16 +81,16 @@ G.upload();
 G.upload(python_flags);
 ```
 
-The argument `python_flags` can take one of three command-line flags which are passed to Python to alter the uploading behavior.
+The argument `python_flags` can take any number of three possible flags which are passed to Python to alter the uploading behavior.
 
 - `'--dry-run'` performs a dry run without actually modifying data on Canvas. This is useful to test the process and ensure correct configuration.
 - `'--question-limit [num]'` takes a numeric value in place of `[num]` and limits the number of questions to process should the generator have an excessive amount. This is useful in combination with question shuffling.
 - `'--delete-quiz'` deletes the quiz from Canvas immediately after uploading it. This allows creating a temporary quiz as a vessel to add the questions to an "Unfiled" question bank on Canvas, then removing that vessel afterwards.
 
-As part of the upload process, a JSON data file is saved at the output path specified when instantiating the generator. If the generator was not configured to connect MATLAB to Python, the quiz can also be saved without uploading.
+The quiz can also be saved without uploading.
 
 ```matlab
-% Save to file only.
+% Save to file only
 G.save();
 ```
 
@@ -68,7 +105,7 @@ Q.add_answer_pair(left, right, incorrect_comment);
 Q.add_answer_pairs({
     {left, right},
     {left, right, incorrect_comment},
-};
+});
 ```
 
 Incorrect answers, called distractors, can be added as additional plain-text choices to each of the question's dropdowns.
@@ -91,12 +128,6 @@ Q.add_incorrect_answers({
     text,
     {text, comment},
 });
-```
-
-A rich-text "catch-all" answer can be added, although this is just syntactic sugar for adding a single incorrect answer.
-
-```matlab
-Q.add_catchall_answer(text);
 ```
 
 ### Multiple Blanks Questions
@@ -133,8 +164,6 @@ Q.add_incorrect_answers({
     text,
     {text, comment},
 });
-
-Q.add_catchall_answer(text);
 ```
 
 ### Multiple Dropdowns Questions

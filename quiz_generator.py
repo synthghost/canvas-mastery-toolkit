@@ -14,12 +14,22 @@ from argparse import ArgumentParser
 
 
 # File handling
-def is_valid_file(parser, abs_path):
-  if not path.exists(abs_path):
-    parser.error('No file found at {}'.format(abs_path))
-    return
+def validate_path(abs_path):
+  if abs_path and not path.exists(abs_path):
+    raise FileNotFoundError('No file found at {}'.format(abs_path))
 
-  return abs_path
+def is_valid_file(parser, abs_path):
+  try:
+    validate_path(abs_path)
+    return abs_path
+  except FileNotFoundError as e:
+    parser.error(e)
+
+def validate_figure_paths(questions):
+  for q in questions:
+    validate_path(q.get('figure_path'))
+    if 'answers' in q:
+      [validate_path(a.get('figure_path')) for a in q['answers']]
 
 
 # Latex conversion
@@ -46,7 +56,7 @@ parser = ArgumentParser(description='Canvas Mastery Toolkit - MATLAB Quiz Genera
 parser.add_argument('--dry-run', action='store_true', help='perform data manipulation but do not post to Canvas')
 parser.add_argument('--question-limit', nargs=1, help='limit on questions to add')
 parser.add_argument('--delete-quiz', action='store_true', help='delete quiz after uploading questions')
-parser.add_argument('path', nargs=1, help='path to .json data file', type=lambda input: is_valid_file(parser, input))
+parser.add_argument('data_path', nargs=1, help='path to .json data file', type=lambda input: is_valid_file(parser, input))
 
 args = parser.parse_args()
 
@@ -54,8 +64,8 @@ dry = bool(args.dry_run)
 limit = int(args.question_limit[0]) if args.question_limit else -1
 delete = bool(args.delete_quiz)
 
-if args.path:
-  output_path = args.path[0]
+if args.data_path:
+  output_path = args.data_path[0]
 
 if not output_path:
   print('Specify an output path via command line arguments')
@@ -82,6 +92,18 @@ if not 'questions' in data:
   print('No questions to process.')
   exit()
 
+has_figures = data.get('has_figures') == True or data.get('has_figures') == 'true'
+
+print('Figures:', has_figures)
+
+folder = manager.get_folder() if has_figures else None
+
+print('Folder:', folder)
+
+# Validate that all figures are valid files
+if has_figures:
+  validate_figure_paths(data['questions'])
+
 
 # Create a blank quiz
 if not dry:
@@ -95,6 +117,19 @@ if not dry:
   print('Quiz:', quiz)
 
 
+def upload_figure(folder, abs_path):
+  if not folder or not abs_path:
+    return ''
+  if dry:
+    return f'<fig="{abs_path}" />'
+  is_uploaded, response = folder.upload(abs_path)
+  if not is_uploaded:
+    raise IOError(f'Upload failed for figure {abs_path}')
+  print(f'Figure {response["filename"]} uploaded.')
+  url = response['preview_url'].split('?')[0].replace('file_', '')
+  return f'<img id="{response["id"]}" src="{url}" alt="" />'
+
+
 # Keep count for limiting purposes
 count = 0
 
@@ -106,9 +141,17 @@ for q in data['questions']:
   if limit > 0 and count >= limit:
     break
 
+  # Don't process questions without answers
+  if not 'answers' in q:
+    print('Skipping question without answers.')
+    continue
+
+  # Upload file first to get an image tag
+  q_figure = upload_figure(folder, q.get('figure_path'))
+
   question = {
     'question_name': q['name'],
-    'question_text': latex(q['text']),
+    'question_text': latex(q['text']).replace('{figure}', q_figure),
     'question_type': q['type'],
     'points_possible': q['points'],
     'answers': [],
@@ -117,17 +160,16 @@ for q in data['questions']:
   if q.get('distractors'):
     question['matching_answer_incorrect_matches'] = '\n'.join(q['distractors'])
 
-  if not 'answers' in q:
-    continue
-
   for a in q['answers']:
     answer = {}
+
+    a_figure = upload_figure(folder, a.get('figure_path'))
 
     # Multiple question types
     if 'text' in a:
       text_types = ['fill_in_multiple_blanks_question', 'multiple_dropdowns_question']
       key = 'answer_text' if q['type'] in text_types else 'answer_html'
-      answer[key] = a['text'] if q['type'] in text_types else latex(a['text'])
+      answer[key] = a['text'] if q['type'] in text_types else latex(a['text']).replace('{figure}', a_figure)
 
     if 'weight' in a:
       answer['answer_weight'] = 100 if a['weight'] > 0 else 0
@@ -137,7 +179,7 @@ for q in data['questions']:
 
     # Matching questions
     if 'left' in a:
-      answer['answer_match_left_html'] = latex(a['left'])
+      answer['answer_match_left_html'] = latex(a['left']).replace('{figure}', a_figure)
 
     if 'right' in a:
       answer['answer_match_right'] = a['right']
@@ -183,12 +225,13 @@ for q in data['questions']:
   # Post the quiz
   quiz.create_question(question=question)
 
-print('Questions uploaded.')
+if not dry:
+  print('Questions uploaded.')
 
 
 # Delete the quiz, leaving the questions in the "Unfiled" bank
 if not dry and delete:
-  quiz.delete();
+  quiz.delete()
   print('Quiz deleted.')
 
 

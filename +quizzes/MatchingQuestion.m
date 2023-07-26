@@ -1,4 +1,4 @@
-classdef MatchingQuestion < Question
+classdef MatchingQuestion < quizzes.Question
 
     properties (SetAccess = protected)
         % The list of incorrect values to show amonst the correct ones.
@@ -6,20 +6,21 @@ classdef MatchingQuestion < Question
     end
 
     methods
-        function self = MatchingQuestion(text, varargin)
-            self.init('matching_question', text, varargin{:});
+        function self = MatchingQuestion(G, text, varargin)
+            self.init(G, 'matching_question', text, varargin{:});
         end
 
 
-        function add_answer_pair(self, left, right, incorrect_comment)
+        function add_answer_pair(self, left, right, args)
             arguments
                 self
                 left {mustBeText}
                 right {mustBeText}
-                incorrect_comment {mustBeText} = ''
+                args.comment_when_incorrect {mustBeText} = ''
+                args.figure_path {mustBeText} = ''
             end
 
-            self.add_answer_pairs({{left, right, incorrect_comment}});
+            self.add_answer_pairs({{left, right, args.comment_when_incorrect, args.figure_path}});
         end
 
 
@@ -29,12 +30,14 @@ classdef MatchingQuestion < Question
                 array (:,1) cell
             end
 
+            assert(length(array) > 0, 'Answer array cannot be empty.')
+
             % Iterate backward to force memory pre-allocation
             for i = length(array):-1:1
-                list(i,1) = self.make_answer(array{i});
+                data(i,1) = self.make_answer(array{i});
             end
 
-            self.answers = [self.answers; list];
+            self.merge(data);
         end
 
 
@@ -50,11 +53,16 @@ classdef MatchingQuestion < Question
 
     methods (Access = protected)
         function A = make_answer(self, data)
-            if length(data) < 3
-                data{3} = '';
+            assert(length(data) >= 2, 'Answer pairs must have at least two arguments.')
+
+            args = quizzes.pad_char_array(data, 4);
+
+            % Check for figures
+            if length(args{4}) > 0
+                self.generator.enable_figures();
             end
 
-            A = MatchingAnswer(char(data(1)), char(data(2)), char(data(3)));
+            A = quizzes.MatchingAnswer(args{:});
         end
     end
 end

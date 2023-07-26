@@ -4,7 +4,7 @@ This repository contains tools to support implementations of the learning master
 
 ## Requirements
 
-- **MATLAB:** 2022b or later
+- **MATLAB:** 2023a or later
 - **Python:** 3.8 or later
 
 **Python dependencies**
@@ -20,39 +20,12 @@ To install the necessary Python requirements, run:
 pip install -r requirements.txt
 ```
 
-## Python Environment
+## Environment
 
-To set a Canvas API access token and course ID, copy `.env.example` to `.env` and set `CANVAS_API_TOKEN` and `CANVAS_COURSE_ID` respectively.
+This toolkit uses environmental variables to configure behavior. To get started, copy `.env.example` to `.env` and open in a text or code editor of choice.
 
-## MATLAB Configuration
+To connect to the Canvas API, set `CANVAS_API_TOKEN` and `CANVAS_COURSE_ID`. To upload generated quiz questions to Canvas, set `PYTHON_COMMAND` to the system's Python executable. To additionally upload figures as part of quiz generation, set `CANVAS_FOLDER_ID`.
 
-Automating the MATLAB-to-Python process is optional, but doing so requires configuring MATLAB to call Python via system commands. To configure this, open `config.m` and set `python_command` and `python_script`.
+## Documentation
 
-## Usage
-
-The MATLAB script `quiz_generator.m` demonstrates how to generate quiz questions and upload them to Canvas. New generators can be created in much the same way, but require at least the following boilerplate.
-
-```matlab
-% Add the quiz generator toolkit to the MATLAB path.
-addpath('matlab');
-
-% The absolute path where the data output file will be saved. This is
-% passed to Python, which will complain if it can't access the file, so
-% an absolute path is recommended. Optionally, it may be useful to change
-% this value for each quiz should you wish to keep a record of the output.
-output_path = '/path/to/output.json';
-
-G = CanvasQuizGenerator(config(), output_path);
-
-% Q = G.add...
-
-G.upload();
-```
-
-The quiz's title and description can optionally be set as part of the boilerplate.
-
-```matlab
-G = CanvasQuizGenerator(config(), output_path, 'Quiz Title', 'Description text');
-```
-
-Details about question generation can be found in `docs.md`.
+For details on usage and syntax, see the information provided in `docs/`.

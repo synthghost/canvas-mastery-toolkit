@@ -1,8 +1,8 @@
-classdef NumericalQuestion < Question
+classdef NumericalQuestion < quizzes.Question
 
     methods
-        function self = NumericalQuestion(text, varargin)
-            self.init('numerical_question', text, varargin{:});
+        function self = NumericalQuestion(G, text, varargin)
+            self.init(G, 'numerical_question', text, varargin{:});
         end
 
 
@@ -43,20 +43,20 @@ classdef NumericalQuestion < Question
     end
 
     methods (Access = protected)
-        function add_answer(self, type, options)
+        function add_answer(self, type, args)
             arguments
                 self
                 type {mustBeText}
-                options.exact = 0
-                options.error_margin = 0
-                options.approximate = 0
-                options.precision = 0
-                options.range_start = 0
-                options.range_end = 0
-                options.comment = ''
+                args.exact = 0
+                args.error_margin = 0
+                args.approximate = 0
+                args.precision = 0
+                args.range_start = 0
+                args.range_end = 0
+                args.comment = ''
             end
 
-            A = NumericalAnswer(type, options);
+            A = quizzes.NumericalAnswer(type, args);
 
             self.answers = {A};
         end
