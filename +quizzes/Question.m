@@ -26,6 +26,26 @@ classdef Question < handle & matlab.mixin.Heterogeneous
         function shuffle_answers(self)
             self.answers = self.answers(randperm(length(self.answers)));
         end
+
+
+        function sort_answers(self, args)
+            arguments
+                self
+                args.descending logical = false
+            end
+
+            if length(self.answers) <= 1 || ~all(isprop(self.answers, 'text'))
+                return
+            end
+
+            [~, indeces] = sort({self.answers.text});
+
+            if args.descending
+                indeces = flip(indeces);
+            end
+
+            self.answers = self.answers(indeces);
+        end
     end
 
     % Sealed methods cannot be redeclared by subclasses.
