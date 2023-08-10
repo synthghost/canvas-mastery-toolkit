@@ -67,7 +67,7 @@ class CourseManager:
     if not id:
       raise KeyError('Missing Canvas folder ID (CANVAS_FOLDER_ID).')
 
-    if course and not isinstance(course, Canvas):
+    if course and not isinstance(course, Course):
       raise TypeError('Course argument must be of type canvasapi.Course.')
 
     try:
