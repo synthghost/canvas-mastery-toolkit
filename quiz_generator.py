@@ -3,6 +3,7 @@ import json
 import uuid
 import logging
 import urllib.parse
+
 from os import path
 from canvas import CourseManager
 from argparse import ArgumentParser

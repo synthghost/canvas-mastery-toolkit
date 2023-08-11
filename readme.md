@@ -4,12 +4,14 @@ This repository contains tools to support implementations of the learning master
 
 ## Requirements
 
-- **MATLAB:** 2023a or later
-- **Python:** 3.8 or later
+- **MATLAB:** 2023a or later (required to use environmental variables)
+- **Python:** 3.8 or later (required by pandas)
 
 **Python dependencies**
+- [bullet](https://github.com/bchao1/bullet)
 - [canvasapi](https://pypi.org/project/canvasapi/)
 - [keyring](https://pypi.org/project/keyring/)
+- [pandas](https://pypi.org/project/pandas/)
 - [python-dotenv](https://pypi.org/project/python-dotenv/)
 
 ## Installation

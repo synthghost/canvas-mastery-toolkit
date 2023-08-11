@@ -1,6 +1,8 @@
+import re
 import getpass
 import keyring
 import logging
+
 from os import path
 from config import config
 from canvasapi import Canvas
@@ -74,6 +76,34 @@ class CourseManager:
       return course.get_folder(id) if course else self.canvas.get_folder(id)
     except (Forbidden, ResourceDoesNotExist, Unauthorized, TypeError):
       raise KeyError('Invalid Canvas folder ID (CANVAS_FOLDER_ID).')
+
+
+  def get_outcome_rubrics(self, course) -> list:
+    if not isinstance(course, Course):
+      raise TypeError('Course argument must be of type canvasapi.Course.')
+
+    # Find course rubrics that follow the single-outcome-style naming
+    # convention and have at least one criteria linked to an outcome.
+    rubrics = [r for r in course.get_rubrics()
+      if r.title.startswith('Outcome Rubric:')
+        and any(x.get('learning_outcome_id', None) for x in r.data)
+    ]
+
+    # Sort the rubrics using natural numeric ordering (i.e. 10 comes after 2).
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    split_numbers = lambda r: ([convert(b) for b in re.split('([0-9]+)', getattr(r, 'title'))], r)
+    return sorted(rubrics, key=split_numbers)
+
+
+  def post_grades(self, assignment_id, graded_only = False) -> dict:
+    response = self.canvas.graphql((
+      'mutation PostGrades {postAssignmentGrades(input: {'
+      f'assignmentId: {assignment_id}, gradedOnly: {str(graded_only).lower()}'
+      '}) {progress {_id\nstate\n__typename}\n__typename} }'
+    ))
+    if response.get('errors'):
+      print('Posting grades failed.')
+    return response
 
 
   def _init_without_keyring(self) -> None:
