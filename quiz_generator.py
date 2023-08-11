@@ -133,6 +133,9 @@ def upload_figure(folder, abs_path):
 # Keep count for limiting purposes.
 count = 0
 
+# Keep running total of the quiz points.
+total_points = 0
+
 # Iterate over data to prepare for Canvas API.
 for q in data['questions']:
   count += 1
@@ -156,6 +159,8 @@ for q in data['questions']:
     'points_possible': q['points'],
     'answers': [],
   }
+
+  total_points += q['points']
 
   if q.get('distractors'):
     question['matching_answer_incorrect_matches'] = '\n'.join(q['distractors'])
@@ -226,6 +231,8 @@ for q in data['questions']:
   quiz.create_question(question=question)
 
 if not dry:
+  # Update total points for the quiz.
+  quiz.edit(quiz={'points_possible': total_points})
   print('Questions uploaded.')
 
 
