@@ -40,7 +40,8 @@ class Grader(object):
 
   def get_assignments(self):
     if not self.assignments:
-      self.assignments = list(self.course.get_assignments())
+      assignments = list(self.course.get_assignments())
+      self.assignments = sorted(assignments, key=lambda a: getattr(a, 'name'))
 
     return self.assignments
 
