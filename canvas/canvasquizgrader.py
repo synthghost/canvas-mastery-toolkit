@@ -134,10 +134,10 @@ class CanvasQuizGrader(canvas.grader.Grader):
     score_map = {0: 0}
 
     for r in ratings_sorted:
+      # List the yet-unmapped possible scores in descending order.
       values = range(min(used_ratings, default=max_points + 1) - 1, -1, -1)
 
-      if len(values) <= 1:
-        used_ratings.append(0)
+      if not r['points'] or len(values) <= 1:
         break
 
       _, index = Bullet(f'Select minimum point bound for rating "{r["points"]} {r["description"]}":', **styles.bullets, choices=list(map(str, values))).launch()
