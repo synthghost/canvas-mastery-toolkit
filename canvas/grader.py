@@ -72,22 +72,34 @@ class Grader(object):
 
     select_choice = 'Select from list'
     selection, _ = Bullet(
-      f'\nSelect existing {type} or create new?', **styles.bullets, choices=[select_choice, 'Create new'],
+      f'\nSelect existing {type} assignment or create new?', **styles.bullets, choices=[select_choice, 'Create new'],
     ).launch()
 
     # Select an existing assignment.
     if selection == select_choice:
-      _, index = Bullet(f'\nSelect {type}:', **styles.bullets, choices=[str(c) for c in collection]).launch()
+      _, index = Bullet(f'\nSelect {type} assignment:', **styles.bullets, choices=[str(c) for c in collection]).launch()
       print(f'\n{str(type).capitalize()}:', collection[index])
       return collection[index], False
 
     # Create a new assignment.
     name = Input(f'\nEnter name for new {type}: ', **styles.inputs).launch()
-    data = {**self.assignment_defaults[type], **properties, 'name': name}
+
+    # Select an assignment group.
+    groups = self.course_manager.get_assignment_groups(self.course)
+    _, index = Bullet(f'\nSelect assignment group:', **styles.bullets, choices=[str(g) for g in groups]).launch()
+
+    data = {
+      **self.assignment_defaults[type],
+      **properties,
+      'assignment_group_id': getattr(groups[index], 'id'),
+      'name': name,
+    }
     assignment = self.course.create_assignment(data)
-    print(f'Created assignment {data["name"]}.')
+    print(f'Created assignment {data["name"]} in group {groups[index]}.')
     print()
+
     self.invalidate_assignments()
+
     return assignment, True
 
 
