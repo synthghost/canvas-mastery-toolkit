@@ -101,7 +101,7 @@ class CourseManager:
 
     # Sort the rubrics using natural numeric ordering (i.e. 10 comes after 2).
     convert = lambda text: int(text) if text.isdigit() else text.lower()
-    split_numbers = lambda r: ([convert(b) for b in re.split('([0-9]+)', getattr(r, 'title'))], r)
+    split_numbers = lambda r: ([convert(b) for b in re.split('([0-9]+)', getattr(r, 'title', ''))], r)
     return sorted(rubrics, key=split_numbers)
 
 

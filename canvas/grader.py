@@ -41,7 +41,7 @@ class Grader(object):
   def get_assignments(self):
     if not self.assignments:
       assignments = list(self.course.get_assignments())
-      self.assignments = sorted(assignments, key=lambda a: getattr(a, 'name'))
+      self.assignments = sorted(assignments, key=lambda a: getattr(a, 'name', None))
 
     return self.assignments
 
@@ -92,7 +92,7 @@ class Grader(object):
     data = {
       **self.assignment_defaults[type],
       **properties,
-      'assignment_group_id': getattr(groups[index], 'id'),
+      'assignment_group_id': getattr(groups[index], 'id', ''),
       'name': name,
     }
     assignment = self.course.create_assignment(data)

@@ -37,7 +37,7 @@ class GradingManager(object):
 
       outcome = self.get_outcome(link.outcome['id'])
       rubrics.append(course.create_rubric(rubric={
-        'title': f'Outcome Rubric: {getattr(outcome, "title")}',
+        'title': f'Outcome Rubric: {getattr(outcome, "title", None)}',
         'points_possible': outcome.mastery_points,
         'free_form_criterion_comments': False,
         'criteria': {

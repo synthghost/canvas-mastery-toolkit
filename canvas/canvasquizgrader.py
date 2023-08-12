@@ -63,7 +63,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
 
 
   def get_scores(self, receptacle: Assignment):
-    submissions = [s for s in receptacle.get_submissions() if getattr(s, 'score') is not None and s.graded_at]
+    submissions = [s for s in receptacle.get_submissions() if getattr(s, 'score', None) is not None and s.graded_at]
 
     # Validate submissions.
     if not submissions:
@@ -116,7 +116,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
       'purpose': 'grading',
       'use_for_grading': False,
     })
-    print('Applied rubric:', getattr(rubric, 'title'))
+    print('Applied rubric:', getattr(rubric, 'title', None))
 
     return rubric.data
 

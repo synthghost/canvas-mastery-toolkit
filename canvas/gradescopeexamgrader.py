@@ -199,7 +199,7 @@ class GradescopeExamGrader(canvas.grader.Grader):
     })
 
     rubric = rubric['rubric']
-    print('Applied rubric:', getattr(rubric, 'title'))
+    print('Applied rubric:', getattr(rubric, 'title', None))
 
     return rubric.data
 
