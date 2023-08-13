@@ -77,7 +77,7 @@ class GradescopeExamGrader(canvas.grader.Grader):
     # Show only file window, not full GUI.
     box.withdraw()
     box.attributes('-topmost', True)
-    data_path = path.normpath(askopenfilename(filetypes=[('CSV files', '*.csv')]))
+    data_path = path.abspath(askopenfilename(filetypes=[('CSV', '*.csv')]))
     box.destroy()
 
     data = pd.read_csv(data_path, header=0, index_col=3)
@@ -108,7 +108,7 @@ class GradescopeExamGrader(canvas.grader.Grader):
       'points_possible': submissions['Max Points'].iloc[0],
       'published': True,
     })
-    print('Published receptacle')
+    print('Published receptacle.')
 
     grades = submissions['Total Score'].rename('posted_grade').to_frame().to_dict('index')
 

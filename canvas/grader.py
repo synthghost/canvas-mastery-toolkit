@@ -108,16 +108,16 @@ class Grader(object):
 
 
   def upload(self, receptacle, mastery, grades):
-    print(f'Grades were processed for {len(grades)} students.')
-
     if not grades:
       print('No grades were processed. Please try again.')
       return
 
+    print(f'Grades were processed for {len(grades)} students.')
+
     # Push scores to Canvas.
     print()
     push_notice = 'This will publish the mastery assignment. ' if not mastery.published else ''
-    push_grades = YesNo(f'Upload scores to Canvas? {push_notice}', default='y', **styles.inputs).launch()
+    push_grades = YesNo(f'Upload mastery scores to Canvas? {push_notice}', default='y', **styles.inputs).launch()
 
     if not push_grades:
       print('Nothing left to do.')
@@ -128,9 +128,8 @@ class Grader(object):
       mastery.edit(assignment={
         'published': True,
       })
-      print('Published mastery')
+      print('Published mastery.')
 
-    print('Uploading scores to Canvas...')
     progress = mastery.submissions_bulk_update(grade_data=grades)
     print('May take a few minutes to show up. See progress here:', progress.url)
 
@@ -138,7 +137,7 @@ class Grader(object):
     print()
     post_receptacle_grades = YesNo('Post receptacle grades to all students? ', default='y', **styles.inputs).launch()
     if post_receptacle_grades:
-      self.course_manager.post_grades(receptacle.id, True)
+      self.course_manager.post_grades(receptacle.id, graded_only=True)
       print('Posted receptacle grades.')
 
     if mastery is not receptacle:
@@ -146,7 +145,7 @@ class Grader(object):
       print()
       post_mastery_grades = YesNo('Post mastery grades to all students? ', default='y', **styles.inputs).launch()
       if post_mastery_grades:
-        self.course_manager.post_grades(mastery.id, True)
+        self.course_manager.post_grades(mastery.id, graded_only=True)
         print('Posted mastery grades.')
 
     print('\nDone.')

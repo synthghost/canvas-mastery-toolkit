@@ -63,9 +63,9 @@ class GradescopeQuizGrader(canvas.grader.Grader):
       receptacle.edit(assignment={
         'published': True,
       })
-      print('Published receptacle')
+      print('Published receptacle.')
 
-    input('\nPlease sync Gradescope! Press <Enter> when syncing complete')
+    input('\nPlease go to Gradescope and click "Post Grades" to sync scores to Canvas. Press <Enter> when syncing complete.')
     print()
 
     return receptacle
