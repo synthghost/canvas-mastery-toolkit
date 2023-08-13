@@ -99,7 +99,7 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
   def push_grades(self, receptacle: Assignment, submissions) -> None:
     push_notice = 'This will publish the receptacle assignment. ' if not receptacle.published else ''
-    push_grades = YesNo(f'Push scores to Canvas? {push_notice}', default='y', **styles.inputs).launch()
+    push_grades = YesNo(f'Upload receptacle scores to Canvas? {push_notice}', default='n', **styles.inputs).launch()
     if not push_grades:
       return
 
@@ -115,7 +115,7 @@ class GradescopeExamGrader(canvas.grader.Grader):
     # Update assignment.
     progress = receptacle.submissions_bulk_update(grade_data=grades)
 
-    print('Pushing receptacle grades to Canvas.', progress.url)
+    print('May take a few minutes to show up. See progress here:', progress.url)
 
 
   def get_rubric(self, receptacle: Assignment, submissions):
