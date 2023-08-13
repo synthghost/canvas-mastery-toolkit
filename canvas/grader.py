@@ -50,24 +50,27 @@ class Grader(object):
     self.assignments = []
 
 
-  def get_mastery(self, receptacle):
+  def get_mastery(self, receptacle: Assignment) -> Assignment:
     # Use same assignment for mastery?
     mastery_same = YesNo('Use the same assignment for mastery? ', default='y', **styles.inputs).launch()
     print()
 
-    if not mastery_same:
-      # Select or create mastery.
-      return self.select_or_create(
-        [a for a in self.get_assignments()
-          if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment],
-        'mastery',
-      )
+    if mastery_same:
+      # Use receptacle as mastery.
+      return receptacle
 
-    # Use receptacle as mastery.
-    return receptacle, False
+    name = getattr(receptacle, 'name', None)
+
+    # Select or create mastery.
+    return self.select_or_create(
+      [a for a in self.get_assignments()
+        if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment],
+      type='mastery',
+      default=f'{name} Mastery' if name else '',
+    )
 
 
-  def select_or_create(self, collection, type = 'assignment', properties = {}) -> (Assignment, bool):
+  def select_or_create(self, collection, type = 'assignment', default = '', properties = {}) -> Assignment:
     if type not in self.assignment_defaults:
       raise ValueError('Type must be defined in assignment_defaults.')
 
@@ -80,10 +83,10 @@ class Grader(object):
     if selection == select_choice:
       _, index = Bullet(f'\nSelect {type} assignment:', **styles.bullets, choices=[str(c) for c in collection]).launch()
       print(f'\n{str(type).capitalize()}:', collection[index])
-      return collection[index], False
+      return collection[index]
 
     # Create a new assignment.
-    name = Input(f'\nEnter name for new {type}: ', **styles.inputs).launch()
+    name = Input(f'\nEnter name for new {type}: ', default=default, **styles.inputs).launch()
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
@@ -101,7 +104,7 @@ class Grader(object):
 
     self.invalidate_assignments()
 
-    return assignment, True
+    return assignment
 
 
   def upload(self, receptacle, mastery, grades):

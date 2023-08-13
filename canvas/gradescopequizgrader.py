@@ -48,7 +48,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
 
   def get_receptacle(self) -> Assignment:
     # Select or create receptacle.
-    receptacle, _ = self.select_or_create(
+    receptacle = self.select_or_create(
       [a for a in self.get_assignments()
         if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment],
       'receptacle',
@@ -85,7 +85,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
 
 
   def get_rubric(self, receptacle: Assignment):
-    mastery, _ = self.get_mastery(receptacle)
+    mastery = self.get_mastery(receptacle)
 
     settings = getattr(mastery, 'rubric_settings', {})
     rubric = getattr(mastery, 'rubric', None)

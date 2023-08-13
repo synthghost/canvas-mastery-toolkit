@@ -76,7 +76,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
 
 
   def get_rubric(self, receptacle: Assignment):
-    mastery, _ = self.get_mastery(receptacle)
+    mastery = self.get_mastery(receptacle)
 
     settings = getattr(mastery, 'rubric_settings', {})
     rubric = getattr(mastery, 'rubric', None)
