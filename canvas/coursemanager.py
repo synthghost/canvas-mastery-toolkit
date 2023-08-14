@@ -1,4 +1,5 @@
 import re
+import math
 import getpass
 import keyring
 import logging
@@ -85,7 +86,7 @@ class CourseManager:
     groups = list(course.get_assignment_groups())
 
     # Sort the groups by position.
-    return sorted(groups, key=lambda g: g.position)
+    return sorted(groups, key=lambda g: getattr(g, 'position', math.inf))
 
 
   def get_outcome_rubrics(self, course) -> list:
