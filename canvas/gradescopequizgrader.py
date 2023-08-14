@@ -111,7 +111,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
       exit()
 
     # Select pre-made rubric.
-    _, index = Bullet(f'\nSelect a rubric:', **styles.bullets, choices=[str(r) for r in rubrics]).launch()
+    _, index = Bullet(f'\nSelect a rubric:', **styles.bullets, choices=list(map(str, rubrics))).launch()
     print('\nRubric:', rubrics[index])
     rubric = rubrics[index]
 

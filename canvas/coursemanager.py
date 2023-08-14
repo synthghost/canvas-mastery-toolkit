@@ -83,10 +83,8 @@ class CourseManager:
     if not isinstance(course, Course):
       raise TypeError('Course argument must be of type canvasapi.Course.')
 
-    groups = list(course.get_assignment_groups())
-
     # Sort the groups by position.
-    return sorted(groups, key=lambda g: getattr(g, 'position', math.inf))
+    return sorted(course.get_assignment_groups(), key=lambda g: getattr(g, 'position', math.inf))
 
 
   def get_outcome_rubrics(self, course) -> list:

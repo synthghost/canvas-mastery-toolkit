@@ -40,8 +40,7 @@ class Grader(object):
 
   def get_assignments(self):
     if not self.assignments:
-      assignments = list(self.course.get_assignments())
-      self.assignments = sorted(assignments, key=lambda a: getattr(a, 'name', None))
+      self.assignments = sorted(self.course.get_assignments(), key=lambda a: getattr(a, 'name', None))
 
     return self.assignments
 
@@ -81,7 +80,7 @@ class Grader(object):
 
     # Select an existing assignment.
     if selection == select_choice:
-      _, index = Bullet(f'\nSelect {type} assignment:', **styles.bullets, choices=[str(c) for c in collection]).launch()
+      _, index = Bullet(f'\nSelect {type} assignment:', **styles.bullets, choices=list(map(str, collection))).launch()
       print(f'\n{str(type).capitalize()}:', collection[index])
       return collection[index]
 
@@ -90,7 +89,7 @@ class Grader(object):
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
-    _, index = Bullet(f'\nSelect assignment group:', **styles.bullets, choices=[str(g) for g in groups]).launch()
+    _, index = Bullet(f'\nSelect assignment group:', **styles.bullets, choices=list(map(str, groups))).launch()
 
     data = {
       **self.assignment_defaults[type],

@@ -55,7 +55,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
     quizzes = [a for a in self.get_assignments()
       if a.published and a.is_quiz_assignment and a.grading_type == 'points']
 
-    _, index = Bullet(f'\nSelect quiz:', **styles.bullets, choices=[str(c) for c in quizzes]).launch()
+    _, index = Bullet(f'\nSelect quiz:', **styles.bullets, choices=list(map(str, quizzes))).launch()
     print('\nQuiz:', quizzes[index])
     print()
 
@@ -102,7 +102,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
       exit()
 
     # Select pre-made rubric.
-    _, index = Bullet(f'\nSelect a rubric:', **styles.bullets, choices=[str(r) for r in rubrics]).launch()
+    _, index = Bullet(f'\nSelect a rubric:', **styles.bullets, choices=list(map(str, rubrics))).launch()
     print('\nRubric:', rubrics[index])
     rubric = rubrics[index]
 
