@@ -43,11 +43,11 @@ class GradescopeExamGrader(canvas.grader.Grader):
       }
 
       for criterion in rubric:
-        match = next(m['question'] for m in self.matches.values() if m['outcome'] == criterion['description'])
+        question = next(m['question'] for m in self.matches.values() if m['outcome'] == criterion['description'])
         try:
-          rating = next(r for r in criterion['ratings'] if r['points'] == submission.loc[match])
+          rating = next(r for r in criterion['ratings'] if r['points'] == submission.loc[question])
         except StopIteration:
-          print('No rating match for score:', submission.loc[match])
+          print('No rating match for score:', submission.loc[question])
           continue
 
         score['rubric_assessment'][criterion['id']] = {
@@ -128,48 +128,63 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
 
   def apply_rubric(self, mastery: Assignment, submissions):
-    columns = submissions.columns.values.tolist()
-    pattern = re.compile(r'^[0-9]+: (.+) \([0-9.]+ pts\)$')
-    questions = list(filter(pattern.search, columns))
-    questions_keyed = {pattern.match(q).group(1).strip(): q for q in questions}
+    # Find question columns given the format "1: [identifier] (3.0 pts)".
+    question_pattern = re.compile(r'^[0-9]+: \[?(.*?)\]? \([0-9.]+ pts\)$')
+    questions = {match.group(1).strip(): column
+      for column in submissions.columns.values.tolist()
+        if (match := question_pattern.search(column))}
 
-    outcome_links = list(self.course.get_all_outcome_links_in_context())
-    outcomes = [link.outcome for link in outcome_links if hasattr(link, 'outcome')]
+    outcome_pattern = re.compile(r'\[(.*?)\]')
+    outcomes_unsorted = {match.group(1).strip(): outcome
+      for link in self.course.get_all_outcome_links_in_context()
+        if (outcome := getattr(link, 'outcome'))
+          and (match := outcome_pattern.search(outcome.get('title', '')))}
+
+    # Sort the outcomes using natural numeric ordering (i.e. 2 before 10).
     convert = lambda text: int(text) if text.isdigit() else text.lower()
-    outcomes_tupled = [([convert(c) for c in re.split('^([0-9]+)', o.get('title'))], o) for o in outcomes]
-    outcomes_sorted = [o for _, o in sorted(outcomes_tupled)]
-    outcomes_keyed = {re.split('^[0-9]+\.', o.get('title'))[1].strip(): o for o in outcomes_sorted}
+    split_numbers = lambda o: tuple(convert(s) for s in re.split('([0-9]+)', o[1]['title']))
+    outcomes = dict(sorted(outcomes_unsorted.items(), key=split_numbers))
 
     matches = {}
 
-    for k, q in questions_keyed.items():
-      if k in outcomes_keyed and outcomes_keyed[k].get('title'):
-        print('Question', q, 'will map to outcome:', outcomes_keyed[k].get('title'))
-        matches[k] = {
-          'question': q,
-          'outcome': outcomes_keyed[k]['title'],
+    # Find a match for each question so none get missed.
+    for id, column in questions.items():
+      if id in outcomes:
+        print(f'Question "{column}" will map to outcome "{outcomes[id]["title"]}"')
+        matches[id] = {
+          'question': column,
+          'outcome': outcomes[id]['title'],
         }
         continue
 
+      # Make dictionary numerically subscriptable, yielding [(key, value), ...].
+      choices = list(outcomes.items())
+
       _, index = Bullet(
-        f'\nQuestion {q} does not have a match. Select an outcome:', **styles.bullets,
-        choices=[str(o.get('title')) for o in outcomes_sorted],
+        f'\nQuestion "{column}" does not have a match. Select an outcome:', **styles.bullets,
+        choices=[str(c[1]['title']) for c in choices],
       ).launch()
-      l = re.split('^[0-9]+\.', outcomes_sorted[index]['title'])[1].strip()
-      matches[l] = {
-        'question': q,
-        'outcome': outcomes_keyed[l]['title'],
+
+      key = choices[index][0]
+      print(f'\nQuestion "{column}" will map to outcome "{outcomes[key]["title"]}"')
+
+      matches[key] = {
+        'question': column,
+        'outcome': outcomes[key]['title'],
       }
-      print()
+
+    print()
 
     self.matches = matches
 
     criteria = {}
     points = 0
 
-    for i, match in enumerate(matches.keys()):
-      if not outcomes_keyed[match].get('id'): continue
-      outcome = self.get_outcome(outcomes_keyed[match]['id'])
+    for i, id in enumerate(matches.keys()):
+      if not outcomes[id].get('id'):
+        continue
+
+      outcome = self.get_outcome(outcomes[id]['id'])
       points += outcome.points_possible
       # The Canvas API requires the criteria object to be an indexed list.
       criteria[i] = {
@@ -206,6 +221,6 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
   def get_outcome(self, id):
     if id not in self.outcomes:
-      print('Retrieving outcome', id)
       self.outcomes[id] = self.course_manager.canvas.get_outcome(id)
+      print(f'Retrieved outcome {id}.')
     return self.outcomes[id]
