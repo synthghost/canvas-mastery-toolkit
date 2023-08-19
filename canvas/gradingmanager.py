@@ -40,14 +40,13 @@ class GradingManager(object):
     course = self.get_course()
 
     rubrics = []
-    outcome_links = list(course.get_all_outcome_links_in_context())
 
-    for link in outcome_links:
+    for link in course.get_all_outcome_links_in_context():
       if not hasattr(link, 'outcome'): continue
 
       outcome = self.get_outcome(link.outcome['id'])
       rubrics.append(course.create_rubric(rubric={
-        'title': f'Outcome Rubric: {getattr(outcome, "title", None)}',
+        'title': f'Outcome Rubric: {getattr(outcome, "display_name", None)}',
         'points_possible': outcome.mastery_points,
         'free_form_criterion_comments': False,
         'criteria': {
@@ -69,7 +68,7 @@ class GradingManager(object):
         'use_for_grading': False,
       }))
 
-    print('\nCreated', len(rubrics), 'rubrics')
+    print('\nCreated', len(rubrics), 'rubrics.')
 
 
   def export_learning_mastery_gradebook(self):
