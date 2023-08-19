@@ -2,6 +2,7 @@ import canvas.grader
 
 from canvas import styles
 from bullet import Bullet, YesNo
+from canvas.bullet import Numbers
 from canvasapi.assignment import Assignment
 
 class CanvasQuizGrader(canvas.grader.Grader):
@@ -9,20 +10,20 @@ class CanvasQuizGrader(canvas.grader.Grader):
   def do(self) -> None:
     print('Now grading Canvas quiz')
 
-    receptacle = None
+    quiz = None
     submissions = None
 
-    # Repeat receptacle or submissions selection until we have submissions.
+    # Repeat quiz or submissions selection until we have submissions.
     while not submissions:
-      receptacle = self.get_quiz()
-      submissions = self.get_scores(receptacle)
+      quiz = self.get_quiz()
+      submissions = self.get_scores(quiz)
 
-    mastery, rubric = self.get_rubric(receptacle)
+    mastery, rubric = self.get_rubric(quiz)
 
     grades = {}
 
     # Map scores to rubric.
-    self.map_scores(receptacle, rubric)
+    score_map = self.map_scores(quiz, rubric)
 
     # Calculate rubric scores.
     for submission in submissions:
@@ -31,23 +32,21 @@ class CanvasQuizGrader(canvas.grader.Grader):
         'rubric_assessment': {},
       }
 
-      criterion = rubric[0]
-
       try:
-        points = next((v for k, v in self.score_map.items() if k <= submission.score))
-        rating = next(r for r in criterion['ratings'] if r['points'] == points)
+        points = next((v for k, v in score_map.items() if k <= submission.score))
+        rating = next(r for r in rubric['ratings'] if r['points'] == points)
       except StopIteration:
         print('No rating match for score:', submission.score)
         continue
 
-      score['rubric_assessment'][criterion['id']] = {
+      score['rubric_assessment'][rubric['id']] = {
         'rating_id': rating['id'],
         'points': rating['points'],
       }
 
       grades[submission.user_id] = score
 
-    self.upload(receptacle, mastery, grades)
+    self.upload(quiz, mastery, grades)
 
 
   def get_quiz(self) -> Assignment:
@@ -90,7 +89,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
     if not rubric or replace_rubric:
       rubric = self.apply_rubric(mastery)
 
-    return mastery, rubric
+    return mastery, rubric[0]
 
 
   def apply_rubric(self, mastery: Assignment):
@@ -116,33 +115,57 @@ class CanvasQuizGrader(canvas.grader.Grader):
       'purpose': 'grading',
       'use_for_grading': False,
     })
+
     print('Applied rubric:', getattr(rubric, 'title', None))
 
     return rubric.data
 
 
   def map_scores(self, receptacle: Assignment, rubric):
-    max_points = int(getattr(receptacle, 'points_possible', rubric[0]['points']))
+    max_points = float(getattr(receptacle, 'points_possible', rubric['points']))
 
-    print('\nMapping scores onto a maximum of', max_points, 'points')
-    print()
+    print(f'Assignment "{receptacle.name}" has a maximum score of {max_points} points.\n')
 
-    ratings = [r for r in rubric[0]['ratings'] if r.get('points') is not None]
-    ratings_sorted = sorted(ratings, key=lambda r: int(r['points']), reverse=True)
+    ratings = [r for r in rubric['ratings'] if r.get('points') is not None]
+    ratings_sorted = sorted(ratings, key=lambda r: float(r['points']), reverse=True)
 
-    used_ratings = []
-    score_map = {0: 0}
+    score_map = {}
 
     for r in ratings_sorted:
-      # List the yet-unmapped possible scores in descending order.
-      values = range(min(used_ratings, default=max_points + 1) - 1, -1, -1)
+      text = f"{r['points']} {r['description']}"
 
-      if not r['points'] or len(values) <= 1:
+      # Skip manually mapping a rating of zero.
+      if r['points'] <= 0:
+        print(f'Automatically set minimum point threshold for rating "{text}" to zero.')
+        score_map[0] = r['points']
         break
 
-      _, index = Bullet(f'Select minimum point bound for rating "{r["points"]} {r["description"]}":', **styles.bullets, choices=list(map(str, values))).launch()
-      used_ratings.append(values[index])
-      score_map[values[index]] = r['points']
-      print()
+      # Algorithm:
+      # If no ratings yet assigned, ask user for minimum max-score bound, which could be less than or equal to max score
+      # Otherwise, repeatedly ask user for the next lower bound, which must be less than the previously defined bound
 
-    self.score_map = dict(sorted(score_map.items(), reverse=True))
+      if len(score_map) == 0:
+        while (value := self.ask_score_threshold(text, max_points)) > max_points or value <= 0:
+          print(f'The threshold must be positive and no greater than the maximum score, {max_points}.\n')
+        score_map[value] = r['points']
+        continue
+
+      bound = min(score_map.keys())
+      while (value := self.ask_score_threshold(text)) >= bound or value < 0:
+        print(f'The threshold must be positive and less than the previous one, {bound}.\n')
+
+      score_map[value] = r['points']
+
+      if value == 0:
+        print('Remaining ratings will not be applied.')
+        break
+
+    print()
+
+    return dict(sorted(score_map.items(), reverse=True))
+
+
+  def ask_score_threshold(self, rating, default = None):
+    return Numbers(
+      f'Enter minimum point threshold for rating "{rating}": ', **styles.inputs,
+    ).launch(default=default)

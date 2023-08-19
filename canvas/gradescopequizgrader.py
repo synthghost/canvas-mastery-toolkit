@@ -28,15 +28,13 @@ class GradescopeQuizGrader(canvas.grader.Grader):
         'rubric_assessment': {},
       }
 
-      criterion = rubric[0]
-
       try:
-        rating = next(r for r in criterion['ratings'] if r['points'] == submission.score)
+        rating = next(r for r in rubric['ratings'] if r['points'] == submission.score)
       except StopIteration:
         print('No rating match for score:', submission.score)
         continue
 
-      score['rubric_assessment'][criterion['id']] = {
+      score['rubric_assessment'][rubric['id']] = {
         'rating_id': rating['id'],
         'points': rating['points'],
       }
@@ -99,7 +97,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
     if not rubric or replace_rubric:
       rubric = self.apply_rubric(mastery)
 
-    return mastery, rubric
+    return mastery, rubric[0]
 
 
   def apply_rubric(self, mastery: Assignment):
@@ -125,6 +123,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
       'purpose': 'grading',
       'use_for_grading': False,
     })
+
     print('Applied rubric:', getattr(rubric, 'title', None))
 
     return rubric.data
