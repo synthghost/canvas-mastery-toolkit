@@ -89,7 +89,7 @@ class Grader(object):
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
-    _, index = Bullet(f'\nSelect assignment group:', **styles.bullets, choices=list(map(str, groups))).launch()
+    _, index = Bullet(f'\nSelect assignment group for new {type}:', **styles.bullets, choices=list(map(str, groups))).launch()
 
     data = {
       **self.assignment_defaults[type],
@@ -98,7 +98,8 @@ class Grader(object):
       'name': name,
     }
     assignment = self.course.create_assignment(data)
-    print(f'Created assignment {data["name"]} in group {groups[index]}.')
+    id = f' ({assignment.id})' if getattr(assignment, 'id', None) else ''
+    print(f'\nCreated assignment {name}{id} in group {groups[index]}.')
     print()
 
     self.invalidate_assignments()
@@ -130,7 +131,7 @@ class Grader(object):
       print('Published mastery.')
 
     progress = mastery.submissions_bulk_update(grade_data=grades)
-    print('May take a few minutes to show up. See progress here:', progress.url)
+    print('Uploaded scores to Canvas. See progress here:', progress.url)
 
     # Choose to post receptacle grades.
     print()

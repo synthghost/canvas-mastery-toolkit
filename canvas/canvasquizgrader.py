@@ -62,7 +62,8 @@ class CanvasQuizGrader(canvas.grader.Grader):
 
 
   def get_scores(self, receptacle: Assignment):
-    submissions = [s for s in receptacle.get_submissions() if getattr(s, 'score', None) is not None and s.graded_at]
+    submissions = [s for s in receptacle.get_submissions()
+      if getattr(s, 'score', None) is not None and s.graded_at]
 
     # Validate submissions.
     if not submissions:
@@ -140,16 +141,16 @@ class CanvasQuizGrader(canvas.grader.Grader):
         score_map[0] = r['points']
         break
 
-      # Algorithm:
-      # If no ratings yet assigned, ask user for minimum max-score bound, which could be less than or equal to max score
-      # Otherwise, repeatedly ask user for the next lower bound, which must be less than the previously defined bound
-
+      # When no ratings have been assigned, ask the user for the minimum
+      # max-score bound, which could be less than or equal to the max score.
       if len(score_map) == 0:
         while (value := self.ask_score_threshold(text, max_points)) > max_points or value <= 0:
           print(f'The threshold must be positive and no greater than the maximum score, {max_points}.\n')
         score_map[value] = r['points']
         continue
 
+      # Otherwise, repeatedly ask the user for the next lower bound,
+      # which must be less than the previously defined minimum bound.
       bound = min(score_map.keys())
       while (value := self.ask_score_threshold(text)) >= bound or value < 0:
         print(f'The threshold must be positive and less than the previous one, {bound}.\n')

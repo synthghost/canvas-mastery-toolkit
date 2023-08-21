@@ -55,7 +55,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
     # Publish receptacle assignment.
     if not receptacle.published:
       if not YesNo(f'Publish receptacle? This is needed to sync Gradescope. ', default='y', **styles.inputs).launch():
-        print('Cannot proceed without syncing Gradescope.')
+        print('\nCannot proceed without syncing Gradescope.')
         exit()
 
       receptacle.edit(assignment={
@@ -70,7 +70,8 @@ class GradescopeQuizGrader(canvas.grader.Grader):
 
 
   def get_scores(self, receptacle: Assignment):
-    submissions = [s for s in receptacle.get_submissions() if getattr(s, 'score', None) is not None and s.graded_at]
+    submissions = [s for s in receptacle.get_submissions()
+      if getattr(s, 'score', None) is not None and s.graded_at]
 
     # Validate submissions.
     if not submissions:
