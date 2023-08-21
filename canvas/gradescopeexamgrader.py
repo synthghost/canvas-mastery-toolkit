@@ -1,6 +1,6 @@
 import re
-import pandas as pd
 import canvas.grader
+import pandas as pd
 
 from os import path
 from tkinter import Tk
@@ -62,13 +62,11 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
   def get_receptacle(self) -> Assignment:
     # Select or create receptacle.
-    receptacle = self.select_or_create(
+    return self.select_or_create(
       [a for a in self.get_assignments()
         if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment],
       type='receptacle',
     )
-
-    return receptacle
 
 
   def get_scores(self):
@@ -128,17 +126,19 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
 
   def apply_rubric(self, mastery: Assignment, submissions):
-    # Find question columns given the format "1: [identifier] (3.0 pts)".
-    question_pattern = re.compile(r'^[0-9]+: \[?(.*?)\]? \([0-9.]+ pts\)$')
-    questions = {match.group(1).strip(): column
+    # Find question columns given the format "1: Question Text (3.0 pts)".
+    question_pattern = re.compile(r'^[0-9]+: (.*?) \([0-9.]+ pts\)$')
+    token_pattern = re.compile(r'\[(.*?)\]')
+
+    tokenize = lambda text: token.group(1).strip() if (token := token_pattern.search(text)) else text
+    questions = {tokenize(match.group(1).strip()): column
       for column in submissions.columns.values.tolist()
         if (match := question_pattern.search(column))}
 
-    outcome_pattern = re.compile(r'\[(.*?)\]')
     outcomes_unsorted = {match.group(1).strip(): outcome
       for link in self.course.get_all_outcome_links_in_context()
         if (outcome := getattr(link, 'outcome'))
-          and (match := outcome_pattern.search(outcome.get('title', '')))}
+          and (match := token_pattern.search(outcome.get('title', '')))}
 
     # Sort the outcomes using natural numeric ordering (i.e. 2 before 10).
     convert = lambda text: int(text) if text.isdigit() else text.lower()
