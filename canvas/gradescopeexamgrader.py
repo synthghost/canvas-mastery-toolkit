@@ -1,6 +1,6 @@
 import re
-import canvas.grader
 import pandas as pd
+import canvas.grader
 
 from os import path
 from tkinter import Tk
