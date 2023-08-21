@@ -12,6 +12,7 @@ This repository contains a toolkit to support implementations of the learning ma
 - [canvasapi](https://pypi.org/project/canvasapi/)
 - [keyring](https://pypi.org/project/keyring/)
 - [pandas](https://pypi.org/project/pandas/)
+- [python-dateutil](https://pypi.org/project/python-dateutil/)
 - [python-dotenv](https://pypi.org/project/python-dotenv/)
 
 ## Installation

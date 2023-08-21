@@ -10,6 +10,7 @@ from canvas.coursemanager import CourseManager
 from tkinter.filedialog import asksaveasfilename
 
 graders = []
+revisers = []
 
 class GradingManager(object):
 
@@ -17,14 +18,24 @@ class GradingManager(object):
     self.outcomes = {}
 
 
-  def start(self) -> None:
-    _, grading_index = Bullet('\nWhat kind of grading?', **styles.bullets,
+  def start_grading(self) -> None:
+    _, grading_index = Bullet('\nWhat kind of assignment?', **styles.bullets,
       choices=['Gradescope Quiz', 'Canvas Quiz', 'Gradescope Exam'],
     ).launch()
     print()
 
     grader = graders[grading_index]()
     grader.do()
+
+
+  def start_revisions(self) -> None:
+    _, revision_index = Bullet('\nWhat kind of assignment?', **styles.bullets,
+      choices=['Gradescope Quiz', 'Gradescope Exam'],
+    ).launch()
+    print()
+
+    reviser = revisers[revision_index]()
+    reviser.do()
 
 
   def get_course(self):
