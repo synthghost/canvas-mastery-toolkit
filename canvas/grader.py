@@ -100,6 +100,8 @@ class Grader(object):
     assignment = self.course.create_assignment(data)
     id = f' ({assignment.id})' if getattr(assignment, 'id', None) else ''
     print(f'\nCreated assignment {name}{id} in group {groups[index]}.')
+    if url := getattr(assignment, 'html_url', None):
+      print('View new assignment here:', url)
     print()
 
     self.invalidate_assignments()
