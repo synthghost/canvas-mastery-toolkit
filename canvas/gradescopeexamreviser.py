@@ -152,6 +152,14 @@ class GradescopeExamReviser(canvas.grader.Grader):
       'title': title,
     })
 
+    # Add URL question.
+    revision.create_question(question={
+      'question_name': 'Gradescope URL',
+      'question_text': f'Go to your submission for "{exam}" in Gradescope, copy the URL, and paste it as a link here. This is so I can see your originally graded work and enter the new grade there.',
+      'question_type': 'essay_question',
+      'points_possible': 1,
+    })
+
     # Add work question.
     revision.create_question(question={
       'question_name': 'Revised Work',
