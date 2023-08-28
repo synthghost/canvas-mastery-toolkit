@@ -1,8 +1,8 @@
 import canvas.grader
 
+from bullet import Bullet
 from canvas import styles
-from bullet import Bullet, YesNo
-from canvas.bullet import Numbers
+from canvas.bullet import Numbers, YesNo
 from canvasapi.assignment import Assignment
 
 class CanvasQuizGrader(canvas.grader.Grader):

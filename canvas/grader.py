@@ -1,7 +1,8 @@
 import logging
 
 from canvas import styles
-from bullet import Bullet, Input, YesNo
+from canvas.bullet import YesNo
+from bullet import Bullet, Input
 from canvasapi.assignment import Assignment
 from canvas.coursemanager import CourseManager
 

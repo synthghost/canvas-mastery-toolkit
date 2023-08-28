@@ -4,8 +4,9 @@ import canvas.grader
 
 from os import path
 from tkinter import Tk
+from bullet import Bullet
 from canvas import styles
-from bullet import Bullet, YesNo
+from canvas.bullet import YesNo
 from canvasapi.assignment import Assignment
 from tkinter.filedialog import askopenfilename
 

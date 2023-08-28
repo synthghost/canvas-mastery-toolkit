@@ -6,9 +6,10 @@ from os import path
 from tkinter import Tk
 from canvas import styles
 from dateutil.tz import gettz
+from canvas.bullet import YesNo
 from canvasapi.quiz import Quiz
+from bullet import Bullet, Input
 from dateutil.parser import parse
-from bullet import Bullet, Input, YesNo
 from tkinter.filedialog import askopenfilename
 
 class GradescopeExamReviser(canvas.grader.Grader):
