@@ -90,24 +90,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
       return
 
     # Create a new revision quiz.
-    revision, question = self.get_revision(exam, column.name)
-
-    # Make a section to assign the revision.
-    section = self.course.create_course_section(course_section={
-      'name': f'Revisions: {exam}; {question}',
-    })
-    id = f' ({section.id})' if getattr(section, 'id', None) else ''
-    print(f'Created section {section.name}{id} for eligible students.')
-
-    for student in students:
-      # Assign student to section.
-      self.course.enroll_user(student, enrollment={
-        'course_section_id': section.id,
-        'enrollment_state': 'active',
-        'type': 'StudentEnrollment',
-      })
-
-    print()
+    revision = self.get_revision(exam, column.name)
 
     # Set revision due date.
     due_iso = None
@@ -123,19 +106,20 @@ class GradescopeExamReviser(canvas.grader.Grader):
       due_zoned = due_parsed.replace(tzinfo=gettz('America/New_York'))
       due_human = due_zoned.strftime('%m/%d/%Y at %H:%M:%S')
       if not YesNo(f'Due date will be {due_human}. Ok? ', default='y', **styles.inputs).launch():
+        print()
         continue
       due_iso = due_zoned.isoformat(timespec='seconds')
 
     assignment = self.course.get_assignment(revision.assignment_id)
     assignment.create_override(assignment_override={
-      'course_section_id': section.id,
       'due_at': due_iso,
+      'student_ids': students,
     })
     assignment.edit(assignment={
       'only_visible_to_overrides': True,
     })
 
-    print(f'\nAssigned revision to section {section.name}.')
+    print(f'\nAssigned revision to {len(students)} students.')
     print()
 
     # Publish revision quiz.
@@ -184,7 +168,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
       print('View new quiz here:', url)
     print()
 
-    return revision, name
+    return revision
 
 
   def parse_question_name(self, question: str) -> str:
