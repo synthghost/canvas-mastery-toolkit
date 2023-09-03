@@ -8,6 +8,7 @@ from bullet import Bullet
 from canvas import styles
 from canvas.coursemanager import CourseManager
 from tkinter.filedialog import asksaveasfilename
+from canvas.canvasquizscheduler import CanvasQuizScheduler
 
 graders = []
 revisers = []
@@ -36,6 +37,11 @@ class GradingManager(object):
 
     reviser = revisers[revision_index]()
     reviser.do()
+
+
+  def start_accommodations(self) -> None:
+    scheduler = CanvasQuizScheduler()
+    scheduler.do()
 
 
   def get_course(self):
