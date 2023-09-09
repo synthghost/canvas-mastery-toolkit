@@ -83,9 +83,10 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
     # Validate submissions.
     if data.empty:
-      print('That CSV file does not contain submissions. Please select another.')
+      print('That CSV file does not contain data. Please select another.')
       return None
 
+    # Drop missing records.
     data.drop(data[data['Status'] == 'Missing'].index, inplace=True)
 
     students = {u.email: u.id for u in self.course.get_users(enrollment_type=['student']) if getattr(u, 'email', None)}
@@ -93,7 +94,8 @@ class GradescopeExamGrader(canvas.grader.Grader):
     # Convert emails to Canvas user IDs and rename the index to match.
     data.index = data.index.map(students).rename('user_id')
 
-    return data
+    # Remove unmapped rows (students not in the course roster).
+    return data[data.index.notnull()]
 
 
   def push_grades(self, receptacle: Assignment, submissions) -> None:
