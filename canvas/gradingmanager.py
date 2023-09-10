@@ -20,8 +20,8 @@ class GradingManager(object):
 
 
   def start_grading(self) -> None:
-    _, grading_index = Bullet('\nWhat kind of assignment?', **styles.bullets,
-      choices=['Gradescope Quiz', 'Canvas Quiz', 'Gradescope Exam'],
+    _, grading_index = Bullet('\nWhat kind of ungraded assignment?', **styles.bullets,
+      choices=['Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam'],
     ).launch()
     print()
 
@@ -30,7 +30,7 @@ class GradingManager(object):
 
 
   def start_revisions(self) -> None:
-    _, revision_index = Bullet('\nWhat kind of assignment?', **styles.bullets,
+    _, revision_index = Bullet('\nWhat kind of revision assignment?', **styles.bullets,
       choices=['Gradescope Quiz', 'Gradescope Exam'],
     ).launch()
     print()

@@ -9,8 +9,8 @@ from .gradescopequizreviser import GradescopeQuizReviser
 from . import gradingmanager as _gradingmanager
 
 _gradingmanager.graders = [
-  GradescopeQuizGrader,
   CanvasQuizGrader,
+  GradescopeQuizGrader,
   GradescopeExamGrader,
 ]
 
