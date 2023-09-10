@@ -31,7 +31,7 @@ class GradingManager(object):
 
   def start_revisions(self) -> None:
     _, revision_index = Bullet('\nWhat kind of revision assignment?', **styles.bullets,
-      choices=['Gradescope Quiz', 'Gradescope Exam'],
+      choices=['Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam'],
     ).launch()
     print()
 
