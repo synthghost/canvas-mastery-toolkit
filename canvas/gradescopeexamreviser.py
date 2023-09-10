@@ -113,6 +113,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
     assignment = self.course.get_assignment(revision.assignment_id)
     assignment.create_override(assignment_override={
       'due_at': due_iso,
+      'lock_at': due_iso,
       'student_ids': students,
     })
     assignment.edit(assignment={
