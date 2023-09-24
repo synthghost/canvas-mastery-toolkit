@@ -79,23 +79,32 @@ class GradescopeExamGrader(canvas.grader.Grader):
     data_path = path.abspath(askopenfilename(filetypes=[('CSV', '*.csv')]))
     box.destroy()
 
-    data = pd.read_csv(data_path, header=0, index_col=3)
+    # Read CSV data without assigning an index column.
+    df_data = pd.read_csv(data_path, header=0, index_col=False)
 
     # Validate submissions.
-    if data.empty:
+    if df_data.empty:
       print('That CSV file does not contain data. Please select another.')
       return None
 
     # Drop missing records.
-    data.drop(data[data['Status'] == 'Missing'].index, inplace=True)
+    df_data.drop(df_data[df_data['Status'] == 'Missing'].index, inplace=True)
 
-    students = {u.email: u.id for u in self.course.get_users(enrollment_type=['student']) if getattr(u, 'email', None)}
+    # Retrieve users.
+    users = {user.email: user.id
+      for user in self.course.get_users(enrollment_type=['student'])
+      if getattr(user, 'email', None)}
 
-    # Convert emails to Canvas user IDs and rename the index to match.
-    data.index = data.index.map(students).rename('user_id')
+    df_users = pd.DataFrame.from_dict(users, orient='index', columns=['user_id'])
 
-    # Remove unmapped rows (students not in the course roster).
-    return data[data.index.notnull()]
+    # Map emails to Canvas user IDs and set the index to match.
+    df_mapped = df_data.join(df_users, on='Email', how='inner').set_index('user_id')
+
+    if df_mapped.index.has_duplicates:
+      print('That CSV file contains duplicate student emails. Please correct and try again.')
+      return None
+
+    return df_mapped
 
 
   def push_grades(self, receptacle: Assignment, submissions) -> None:
