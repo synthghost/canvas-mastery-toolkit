@@ -1,8 +1,10 @@
+import time
 import logging
 
 from canvas import styles
 from canvas.bullet import YesNo
 from bullet import Bullet, Input
+from canvasapi.progress import Progress
 from canvasapi.assignment import Assignment
 from canvas.coursemanager import CourseManager
 
@@ -34,6 +36,9 @@ class Grader(object):
     # Pre-load existing assignments.
     self.invalidate_assignments()
     self.get_assignments()
+
+    # Set state.
+    self.receptacle_upload_progress = None
 
     print('Course:', self.course)
     print()
@@ -133,22 +138,42 @@ class Grader(object):
       })
       print('Published mastery.')
 
+    print()
     progress = mastery.submissions_bulk_update(grade_data=grades)
-    print('Uploaded scores to Canvas. See progress here:', progress.url)
+    pushed_receptacle = isinstance(self.receptacle_upload_progress, Progress)
 
     # Choose to post receptacle grades.
-    print()
-    post_receptacle_grades = YesNo('Post receptacle grades to all students? ', default='y', **styles.inputs).launch()
+    post_receptacle_grades = pushed_receptacle and mastery is not receptacle and YesNo('Post receptacle grades to all students? ', default='y', **styles.inputs).launch()
     if post_receptacle_grades:
+      self.await_upload_progress(self.receptacle_upload_progress)
       self.course_manager.post_grades(receptacle.id, graded_only=True)
       print('Posted receptacle grades.')
-
-    if mastery is not receptacle:
-      # Choose to post mastery grades.
       print()
-      post_mastery_grades = YesNo('Post mastery grades to all students? ', default='y', **styles.inputs).launch()
-      if post_mastery_grades:
-        self.course_manager.post_grades(mastery.id, graded_only=True)
-        print('Posted mastery grades.')
+
+    # Choose to post mastery grades.
+    post_mastery_grades = YesNo('Post mastery grades to all students? ', default='y', **styles.inputs).launch()
+    if post_mastery_grades:
+      self.await_upload_progress(progress)
+      self.course_manager.post_grades(mastery.id, graded_only=True)
+      print('Posted mastery grades.')
 
     print('\nDone.')
+
+
+  def await_upload_progress(self, progress):
+    if progress.workflow_state == 'complete':
+      return
+
+    print('\nWaiting for scores to upload to Canvas.', end='')
+    while progress.query().workflow_state not in ['completed', 'failed']:
+      print('.', end='')
+      # Wait one second between queries.
+      time.sleep(1)
+    print()
+
+    if progress.workflow_state == 'failed':
+      print('Upload failed.')
+      exit()
+
+    print('Upload complete.')
+    return

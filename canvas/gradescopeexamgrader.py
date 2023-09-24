@@ -123,9 +123,10 @@ class GradescopeExamGrader(canvas.grader.Grader):
     grades = submissions['Total Score'].rename('posted_grade').to_frame().to_dict('index')
 
     # Update assignment.
-    progress = receptacle.submissions_bulk_update(grade_data=grades)
+    self.receptacle_upload_progress = receptacle.submissions_bulk_update(grade_data=grades)
 
-    print('May take a few minutes to show up. See progress here:', progress.url)
+    print('Scores are uploading to Canvas in the background.')
+    print()
 
 
   def get_rubric(self, receptacle: Assignment, submissions):
