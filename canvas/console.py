@@ -55,14 +55,16 @@ def courses():
 @courses.command
 @click.argument('course_name')
 @click.argument('course_id', type=int)
-def add(course_name, course_id):
+@click.argument('folder_id', type=int, required=False)
+def add(course_name, course_id, folder_id):
   """Add a Canvas course entry.
 
   \b
   COURSE_NAME is the name to give the course entry.
-  COURSE_ID is the Canvas ID for the course entry.
+  COURSE_ID is the Canvas ID for the course.
+  FOLDER_ID is the Canvas ID for a file upload folder (optional).
   """
-  config_manager.add_course(course_name, course_id)
+  config_manager.add_course(course_name, course_id, folder_id)
 
 
 @courses.command

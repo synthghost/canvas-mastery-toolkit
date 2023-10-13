@@ -76,7 +76,7 @@ class ConfigManager:
     return ConfigCourse(self, section)
 
 
-  def add_course(self, name: str, canvas_id: str) -> None:
+  def add_course(self, name: str, canvas_id: str, folder_id: str) -> None:
     if self.course_name_valid_and_exists(name):
       click.secho(f'Course "{name}" already exists. Try a different name.', **styles.error)
       exit()
@@ -90,7 +90,7 @@ class ConfigManager:
       # to store uploaded figures. Can possibly be found on Canvas,
       # or by calling CourseManager().get_course().get_folders() to
       # get a list of Folder objects, each with an 'id' property.
-      'canvas_folder_id': '',
+      'canvas_folder_id': folder_id or '',
     }
 
     self.save()
