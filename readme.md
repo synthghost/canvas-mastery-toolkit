@@ -19,7 +19,7 @@ This repository contains a toolkit to support implementations of the learning ma
 To install the Python package, run, in the cloned repository:
 
 ```bash
-pip install .
+pip install -e .
 ```
 
 Then, to install the toolkit console, run:
