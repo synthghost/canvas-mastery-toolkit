@@ -1,13 +1,17 @@
-from .coursemanager import CourseManager
-from .gradingmanager import GradingManager
-from .canvasquizgrader import CanvasQuizGrader
-from .canvasquizreviser import CanvasQuizReviser
-from .gradescopeexamgrader import GradescopeExamGrader
-from .gradescopequizgrader import GradescopeQuizGrader
-from .gradescopeexamreviser import GradescopeExamReviser
-from .gradescopequizreviser import GradescopeQuizReviser
+from canvas.configmanager import ConfigManager
 
-from . import gradingmanager as _gradingmanager
+# Dependent on canvas.configmanager.
+from canvas.coursemanager import CourseManager
+from canvas.gradingmanager import GradingManager
+
+from canvas.canvasquizgrader import CanvasQuizGrader
+from canvas.canvasquizreviser import CanvasQuizReviser
+from canvas.gradescopeexamgrader import GradescopeExamGrader
+from canvas.gradescopequizgrader import GradescopeQuizGrader
+from canvas.gradescopeexamreviser import GradescopeExamReviser
+from canvas.gradescopequizreviser import GradescopeQuizReviser
+
+from canvas import gradingmanager as _gradingmanager
 
 _gradingmanager.graders = [
   CanvasQuizGrader,

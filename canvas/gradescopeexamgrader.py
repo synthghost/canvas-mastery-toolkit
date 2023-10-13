@@ -8,12 +8,13 @@ from bullet import Bullet
 from canvas import styles
 from canvas.bullet import YesNo
 from canvasapi.assignment import Assignment
+from canvas.configcourse import ConfigCourse
 from tkinter.filedialog import askopenfilename
 
 class GradescopeExamGrader(canvas.grader.Grader):
 
-  def __init__(self) -> None:
-    super().__init__()
+  def __init__(self, config: ConfigCourse) -> None:
+    super().__init__(config)
 
     self.outcomes = {}
 

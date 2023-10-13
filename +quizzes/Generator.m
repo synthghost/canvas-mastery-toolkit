@@ -10,17 +10,19 @@ classdef Generator < handle
     end
 
     properties (Access = protected)
-        data_path
+        course_name; data_path
     end
 
     methods
-        function self = Generator(data_path, title, description)
+        function self = Generator(course_name, data_path, title, description)
             arguments
+                course_name {mustBeText}
                 data_path {mustBeText}
                 title {mustBeText} = ''
                 description {mustBeText} = ''
             end
 
+            self.course_name = course_name;
             self.data_path = data_path;
             self.title = title;
             self.description = description;
@@ -92,8 +94,9 @@ classdef Generator < handle
             self.save();
 
             % Run Python to upload quiz data to Canvas.
-            system(sprintf('%s "%s" %s "%s"', ...
-                cfg.python_command, cfg.python_uploader, python_flags, self.data_path));
+            system(sprintf('%s "%s" "%s" %s "%s"', ...
+                cfg.python_command, cfg.python_uploader, ...
+                self.course_name, python_flags, self.data_path));
         end
     end
 

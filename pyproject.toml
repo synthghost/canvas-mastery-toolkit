@@ -1,0 +1,27 @@
+[project]
+name = "canvas-mastery-toolkit"
+version = "0.0.1"
+authors = [
+    {name = "SynthGhost"},
+]
+description = "A toolkit to support implementations of the learning mastery gradebook on Canvas."
+readme = "readme.md"
+requires-python = ">=3.8"
+dependencies = [
+    "bullet==2.2.0",
+    "canvasapi==3.2.0",
+    "click==8.1.7",
+    "keyring==24.2.0",
+    "pandas==2.0.3",
+    "python-dateutil==2.8.2",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["canvas"]
+
+[project.scripts]
+canvas = "canvas.console:cli"

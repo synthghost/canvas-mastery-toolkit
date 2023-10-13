@@ -6,10 +6,11 @@ clear all; clc
 
 addpath('/path/to/canvas-mastery-toolkit');
 
+course_name = 'sandbox';
 data_path = '/path/to/data.json';
 quiz_title = 'MATLAB-Generated Quiz';
 
-G = quizzes.Generator(data_path, quiz_title);
+G = quizzes.Generator(course_name, data_path, quiz_title);
 
 
 
@@ -128,4 +129,5 @@ Q6.add_range_answer(0.8, 1.2, 'Nice job!');
 % G.save();
 
 % Save and upload to Canvas.
+% G.upload();
 G.upload('--dry-run');

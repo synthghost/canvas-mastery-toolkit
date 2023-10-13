@@ -5,7 +5,9 @@
 .vscode/
 
 # Compilation and optimization
+build/
 __pycache__/
+*.egg-info
 *.py[cod]
 *.asv
 

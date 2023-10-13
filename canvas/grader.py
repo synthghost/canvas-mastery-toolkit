@@ -1,12 +1,11 @@
 import time
-import logging
 
-from canvas import styles
 from canvas.bullet import YesNo
 from bullet import Bullet, Input
+from canvas import CourseManager, styles
 from canvasapi.progress import Progress
 from canvasapi.assignment import Assignment
-from canvas.coursemanager import CourseManager
+from canvas.configcourse import ConfigCourse
 
 class Grader(object):
   # Assignment properties
@@ -27,10 +26,11 @@ class Grader(object):
   }
 
 
-  def __init__(self) -> None:
+  def __init__(self, config: ConfigCourse) -> None:
+    self.config = config
+
     # Connect to Canvas course.
-    self.course_manager = CourseManager()
-    self.course_manager.set_logging(logging.DEBUG)
+    self.course_manager = CourseManager(self.config)
     self.course = self.course_manager.get_course()
 
     # Pre-load existing assignments.

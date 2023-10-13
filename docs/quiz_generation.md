@@ -6,14 +6,19 @@ The MATLAB script `examples/quiz_generation.m` demonstrates how to generate quiz
 % Add the toolkit to the MATLAB path.
 addpath('/path/to/canvas-mastery-toolkit');
 
+% The name of the configured Canvas course entry where the quiz
+% will be uploaded. Such an entry can be created using the toolkit
+% console command "canvas courses add <course_name> <canvas_id>".
+course_name = 'sandbox';
+
 % The absolute path where the data output file will be saved. This is
-% passed to Python, which will complain if it can't access the file, so
-% an absolute path is recommended. Optionally, it may be useful to change
-% this value for each quiz should you wish to keep a record of the output.
+% passed to Python, which will complain if it cannot access the file,
+% so an absolute path is recommended. Optionally, it may be useful to
+% change this value for each quiz so as to keep a record of the output.
 data_path = '/path/to/data.json';
 
 % Create a quiz generator.
-G = quizzes.Generator(data_path);
+G = quizzes.Generator(course_name, data_path);
 
 % Add questions and answers.
 % Q = G.add...
@@ -36,17 +41,17 @@ data_path = [this_folder, '/', this_file, '.json'];
 The quiz's title and rich-text description can optionally be set as part of the boilerplate.
 
 ```matlab
-G = quizzes.Generator(data_path, 'Quiz Title', 'Description text');
+G = quizzes.Generator(course_name, data_path, 'Quiz Title', 'Description text');
 ```
 
 Note that if `--delete-quiz` is given as a Python flag during upload, the title and description are effectively meaningless since the quiz will be removed once the questions are fully uploaded.
 
 ## Creating and using a generator
 
-Generating Canvas quizzes in MATLAB revolves around the `Generator` class of the `quizzes` package. A generator object must be instantiated with a data output path to begin adding questions.
+Generating Canvas quizzes in MATLAB revolves around the `Generator` class of the `quizzes` package. A generator object must be instantiated with a configured Canvas course entry name and a data output path to begin adding questions.
 
 ```matlab
-G = quizzes.Generator('path/to/data.json');
+G = quizzes.Generator('sandbox', 'path/to/data.json');
 ```
 
 The data output path determines where MATLAB will save a JSON representation of the assembled quiz. This data is passed to Python to upload to Canvas.

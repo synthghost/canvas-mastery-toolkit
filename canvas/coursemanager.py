@@ -2,22 +2,23 @@ import re
 import math
 import getpass
 import keyring
-import logging
 
-from os import path
-from config import config
 from canvasapi import Canvas
 from canvasapi.course import Course, Folder
+from canvas.configcourse import ConfigCourse
 from canvasapi.exceptions import Forbidden, InvalidAccessToken, ResourceDoesNotExist, Unauthorized
 
 class CourseManager:
 
-  def __init__(self) -> None:
-    if config['canvas_keyring_disable'].lower() == 'true':
+  def __init__(self, config: ConfigCourse) -> None:
+    self.course = config
+    self.config = self.course.manager
+
+    if self.config.get('canvas_keyring_disable').lower() == 'true':
       return self._init_without_keyring()
 
-    keyring_name = config['canvas_keyring_name']
-    keyring_user = config['canvas_keyring_user']
+    keyring_name = self.config.get('canvas_keyring_name')
+    keyring_user = self.config.get('canvas_keyring_user')
 
     token = keyring.get_password(keyring_name, keyring_user)
 
@@ -29,8 +30,8 @@ class CourseManager:
         print('Invalid Canvas access token.')
         pass
 
-    # Fall back to environmental variable, if possible, or ask the user for input otherwise.
-    token = config['canvas_api_token'] or getpass.getpass('Enter new Canvas access token:')
+    # Fall back to config value if possible, or ask the user for input otherwise.
+    token = self.config.get('canvas_api_token') or getpass.getpass('Enter new Canvas access token:')
 
     try:
       self._connect(token)
@@ -41,34 +42,23 @@ class CourseManager:
       raise KeyError('Invalid Canvas access token. Try again.')
 
 
-  def set_logging(self, level: int = logging.WARNING) -> None:
-    logger = logging.getLogger('canvasapi')
-    handler = logging.FileHandler(path.join(config['canvas_logs_dir'], 'canvas.log'))
-    formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s')
-
-    handler.setLevel(level)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(level)
-
-
   def get_course(self, course_id = None) -> Course:
-    id = course_id or config['canvas_course_id']
+    id = course_id or self.course.get('canvas_course_id')
 
     if not id:
-      raise KeyError('Missing Canvas course ID (CANVAS_COURSE_ID).')
+      raise KeyError('Missing Canvas course ID (canvas_course_id).')
 
     try:
       return self.canvas.get_course(id)
     except (Forbidden, ResourceDoesNotExist, Unauthorized, TypeError):
-      raise KeyError('Invalid Canvas course ID (CANVAS_COURSE_ID).')
+      raise KeyError('Invalid Canvas course ID (canvas_course_id).')
 
 
   def get_folder(self, course = None, folder_id = None) -> Folder:
-    id = folder_id or config['canvas_folder_id']
+    id = folder_id or self.course.get('canvas_folder_id')
 
     if not id:
-      raise KeyError('Missing Canvas folder ID (CANVAS_FOLDER_ID).')
+      raise KeyError('Missing Canvas folder ID (canvas_folder_id).')
 
     if course and not isinstance(course, Course):
       raise TypeError('Course argument must be of type canvasapi.Course.')
@@ -76,7 +66,7 @@ class CourseManager:
     try:
       return course.get_folder(id) if course else self.canvas.get_folder(id)
     except (Forbidden, ResourceDoesNotExist, Unauthorized, TypeError):
-      raise KeyError('Invalid Canvas folder ID (CANVAS_FOLDER_ID).')
+      raise KeyError('Invalid Canvas folder ID (canvas_folder_id).')
 
 
   def get_assignment_groups(self, course) -> list:
@@ -116,20 +106,20 @@ class CourseManager:
 
 
   def _init_without_keyring(self) -> None:
-    token = config['canvas_api_token']
+    token = self.config.get('canvas_api_token')
 
     if not token:
-      raise KeyError('Missing Canvas access token (CANVAS_API_TOKEN).')
+      raise KeyError('Missing Canvas access token (canvas_api_token).')
 
     try:
       self._connect(token)
       return
     except InvalidAccessToken:
-      raise KeyError('Invalid Canvas access token (CANVAS_API_TOKEN).')
+      raise KeyError('Invalid Canvas access token (canvas_api_token).')
 
 
   def _connect(self, token) -> None:
-    canvas = Canvas(config['canvas_url'], token)
+    canvas = Canvas(self.config.get('canvas_url').rstrip('/'), token)
     canvas.get_current_user()
     self.canvas = canvas
     print('Connected to Canvas.')

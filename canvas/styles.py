@@ -1,6 +1,6 @@
 from bullet import colors
 
-# Multiple choice style
+# Bullet multiple choice style
 bullets = {
   'align': 3,
   'bullet': ' >',
@@ -9,7 +9,14 @@ bullets = {
   'return_index': True,
 }
 
-# Text input style
+# Bullet text input style
 inputs = {
   'word_color': colors.foreground['yellow'],
+}
+
+# Click console error style
+error = {
+  'bold': True,
+  'err': True,
+  'fg': 'red',
 }

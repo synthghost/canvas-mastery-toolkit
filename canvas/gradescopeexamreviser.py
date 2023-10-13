@@ -5,6 +5,7 @@ import canvas.grader
 from os import path
 from tkinter import Tk
 from canvas import styles
+from string import Template
 from dateutil.tz import gettz
 from canvas.bullet import YesNo
 from canvasapi.quiz import Quiz
@@ -164,23 +165,16 @@ class GradescopeExamReviser(canvas.grader.Grader):
       'title': title,
     })
 
-    # Add URL question.
-    revision.create_question(question={
-      'question_name': 'Gradescope URL',
-      'question_text': f'Go to your submission for "{exam}" in Gradescope, copy the URL, and paste it as a link here. This is so I can see your originally graded work and enter the new grade there.',
-      'question_type': 'essay_question',
-      'points_possible': 1,
-    })
+    points = []
 
-    # Add work question.
-    revision.create_question(question={
-      'question_name': 'Revised Work',
-      'question_text': 'Upload your revised work. Be sure to follow the revision rules.',
-      'question_type': 'file_upload_question',
-      'points_possible': 1,
-    })
+    # Add questions.
+    for question in self.config.get_revision_questions():
+      revision.create_question(question=self.parse_question_tokens(question, {
+        'assignment': exam,
+      }))
+      points.append(float(question.get('points_possible', 0)))
 
-    revision.edit(quiz={'points_possible': 1})
+    revision.edit(quiz={'points_possible': sum(points)})
 
     id = f' ({revision.id})' if getattr(revision, 'id', None) else ''
     print(f'\nCreated revision quiz {title}{id} in group {groups[index]}.')
@@ -196,3 +190,8 @@ class GradescopeExamReviser(canvas.grader.Grader):
     name = match.group(1).strip() if (match := question_pattern.search(question)) else question
     parts = re.split(r'\[(.*?)\] ?', name)
     return parts[2] or parts[1] if len(parts) > 2 else name
+
+
+  def parse_question_tokens(self, question: dict, tokens: dict) -> dict:
+    return {key: Template(value).safe_substitute(**tokens)
+      for key, value in question.items()}

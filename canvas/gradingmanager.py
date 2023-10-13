@@ -1,12 +1,12 @@
 import re
-import logging
 import pandas as pd
 
 from os import path
 from tkinter import Tk
+from typing import Self
 from bullet import Bullet
-from canvas import styles
-from canvas.coursemanager import CourseManager
+from canvas import CourseManager, styles
+from canvas.configcourse import ConfigCourse
 from tkinter.filedialog import asksaveasfilename
 from canvas.canvasquizscheduler import CanvasQuizScheduler
 
@@ -19,13 +19,18 @@ class GradingManager(object):
     self.outcomes = {}
 
 
+  def use(self, config: ConfigCourse) -> Self:
+    self.config = config
+    return self
+
+
   def start_grading(self) -> None:
     _, grading_index = Bullet('\nWhat kind of ungraded assignment?', **styles.bullets,
       choices=['Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam'],
     ).launch()
     print()
 
-    grader = graders[grading_index]()
+    grader = graders[grading_index](self.config)
     grader.do()
 
 
@@ -35,18 +40,17 @@ class GradingManager(object):
     ).launch()
     print()
 
-    reviser = revisers[revision_index]()
+    reviser = revisers[revision_index](self.config)
     reviser.do()
 
 
   def start_accommodations(self) -> None:
-    scheduler = CanvasQuizScheduler()
+    scheduler = CanvasQuizScheduler(self.config)
     scheduler.do()
 
 
   def get_course(self):
-    self.course_manager = CourseManager()
-    self.course_manager.set_logging(logging.DEBUG)
+    self.course_manager = CourseManager(self.config)
     course = self.course_manager.get_course()
     print('Course:', course)
     print()
