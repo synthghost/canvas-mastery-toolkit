@@ -12,7 +12,7 @@ dependencies = [
     "canvasapi==3.2.0",
     "click==8.1.7",
     "keyring==24.2.0",
-    "pandas==2.0.3",
+    "pandas==2.1.1",
     "python-dateutil==2.8.2",
 ]
 
