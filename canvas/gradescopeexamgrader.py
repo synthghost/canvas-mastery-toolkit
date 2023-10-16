@@ -8,16 +8,9 @@ from bullet import Bullet
 from canvas import styles
 from canvas.bullet import YesNo
 from canvasapi.assignment import Assignment
-from canvas.configcourse import ConfigCourse
 from tkinter.filedialog import askopenfilename
 
 class GradescopeExamGrader(canvas.grader.Grader):
-
-  def __init__(self, config: ConfigCourse) -> None:
-    super().__init__(config)
-
-    self.outcomes = {}
-
 
   def do(self) -> None:
     print('Now grading Gradescope exam')
@@ -231,10 +224,3 @@ class GradescopeExamGrader(canvas.grader.Grader):
     print('Applied rubric:', getattr(rubric, 'title', None))
 
     return rubric.data
-
-
-  def get_outcome(self, id):
-    if id not in self.outcomes:
-      self.outcomes[id] = self.course_manager.canvas.get_outcome(id)
-      print(f'Retrieved outcome {id}.')
-    return self.outcomes[id]

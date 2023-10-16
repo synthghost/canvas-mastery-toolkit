@@ -100,6 +100,13 @@ def course_name_argument(func):
 
 @cli.command
 @course_name_argument
+def assign():
+  """Assign checkpoint opportunities for given Canvas course."""
+  grading_manager.start_opportunities()
+
+
+@cli.command
+@course_name_argument
 def export():
   """Export mastery gradebook for given Canvas course."""
   grading_manager.export_learning_mastery_gradebook()

@@ -39,6 +39,7 @@ class Grader(object):
 
     # Set state.
     self.receptacle_upload_progress = None
+    self.outcomes = {}
 
     print('Course:', self.course)
     print()
@@ -113,6 +114,13 @@ class Grader(object):
     self.invalidate_assignments()
 
     return assignment
+
+
+  def get_outcome(self, id):
+    if id not in self.outcomes:
+      self.outcomes[id] = self.course_manager.canvas.get_outcome(id)
+      print(f'Retrieved outcome {id}.')
+    return self.outcomes[id]
 
 
   def upload(self, receptacle, mastery, grades):

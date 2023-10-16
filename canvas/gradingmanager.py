@@ -46,7 +46,12 @@ class GradingManager(object):
 
   def start_accommodations(self) -> None:
     scheduler = CanvasQuizScheduler(self.config)
-    scheduler.do()
+    scheduler.do_accommodations()
+
+
+  def start_opportunities(self) -> None:
+    scheduler = CanvasQuizScheduler(self.config)
+    scheduler.do_checkpoints()
 
 
   def get_course(self):
@@ -176,6 +181,6 @@ class GradingManager(object):
 
   def get_outcome(self, id):
     if id not in self.outcomes:
-      print('Retrieving outcome', id)
       self.outcomes[id] = self.course_manager.canvas.get_outcome(id)
+      print(f'Retrieved outcome {id}.')
     return self.outcomes[id]
