@@ -13,6 +13,7 @@ from collections import Counter
 from bullet import Bullet, Input
 from dateutil.parser import parse
 from canvas.bullet import Numbers, YesNo
+from canvasapi.exceptions import BadRequest
 from tkinter.filedialog import askopenfilename
 
 class CanvasQuizScheduler(canvas.grader.Grader):
@@ -38,7 +39,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
   def do_checkpoints(self) -> None:
     print('Now assigning Canvas checkpoint opportunities')
 
-    quiz = self.get_quiz()
+    quiz = self.get_quiz(check_unpublished=True)
 
     outcome = self.get_learning_outcome()
 
@@ -58,10 +59,10 @@ class CanvasQuizScheduler(canvas.grader.Grader):
 
     students = self.course.get_users(enrollment_type=['student'])
 
-    eligible_users = [s.id for s in students
+    eligible_students = [s for s in students
       if getattr(s, 'email', None) and s.id not in mastered_users]
 
-    print(f'Found {len(eligible_users)} students eligible for the checkpoint.')
+    print(f'Found {len(eligible_students)} students eligible for the checkpoint.')
     print()
 
     due_iso = None
@@ -82,46 +83,49 @@ class CanvasQuizScheduler(canvas.grader.Grader):
         continue
       due_iso = due_zoned.isoformat(timespec='seconds')
 
-    override = {
-      'student_ids': eligible_users,
-    }
+    # Assign the quiz to eligible students.
+    assignment = self.course.get_assignment(quiz.assignment_id)
 
-    if due_iso:
-      override.update({
+    try:
+      assignment.create_override(assignment_override={
         'due_at': due_iso,
         'lock_at': due_iso,
+        'student_ids': [s.id for s in eligible_students],
       })
+    except BadRequest:
+      print('\nCannot make student-specific assignments if overrides already exist.')
+      exit()
 
-    # Assign the quiz to eligible users.
-    assignment = self.course.get_assignment(quiz.assignment_id)
-    assignment.create_override(assignment_override=override)
     assignment.edit(assignment={
       'only_visible_to_overrides': True,
     })
 
-    print(f'Assigned checkpoint to {len(eligible_users)} students.')
+    print(f'\nAssigned checkpoint to {len(eligible_students)} students.')
     print()
 
     if getattr(quiz, 'time_limit', None):
-      self.assign_extra_time(quiz)
+      self.assign_extra_time(quiz, eligible_students)
 
     # Publish quiz.
-    if not quiz.published and YesNo(f'Publish quiz? ', default='y', **styles.inputs).launch():
-      quiz.edit(quiz={
-        'published': True,
-      })
+    publish = YesNo(f'Publish quiz? ', default='y', **styles.inputs).launch()
+
+    quiz.edit(quiz={
+      'only_visible_to_overrides': True,
+      'published': publish,
+    })
+
+    if publish:
       print(f'Published quiz {quiz.title}.')
-      print()
 
-    print('Done.')
+    print('\nDone.')
 
 
-  def assign_extra_time(self, quiz: Quiz) -> None:
+  def assign_extra_time(self, quiz: Quiz, students: list = None) -> None:
     accommodations = None
 
     # Repeat accommodation selection until we have accommodations.
     while not isinstance(accommodations, pd.DataFrame) or accommodations.empty:
-      accommodations = self.get_accommodations()
+      accommodations = self.get_accommodations(students)
 
     # Find time accommodations.
     times = self.get_applicable_accommodations(accommodations)
@@ -151,12 +155,13 @@ class CanvasQuizScheduler(canvas.grader.Grader):
     print()
 
 
-  def get_quiz(self, check_time_limits = False) -> Quiz:
+  def get_quiz(self, check_time_limits = False, check_unpublished = False) -> Quiz:
     passes_limit = lambda q: getattr(q, 'time_limit', None) if check_time_limits else True
+    passes_unpublished = lambda q: not q.published if check_unpublished else True
 
     # Select an existing assignment.
     quizzes = sorted([q for q in self.course.get_quizzes()
-      if q.quiz_type == 'assignment' and passes_limit(q)],
+      if q.quiz_type == 'assignment' and passes_limit(q) and passes_unpublished(q)],
       key=lambda q: getattr(q, 'title', None))
 
     if not quizzes:
@@ -202,6 +207,8 @@ class CanvasQuizScheduler(canvas.grader.Grader):
 
 
   def get_accommodations(self, students = None):
+    print('Select a CSV file of accommodations.')
+
     box = Tk()
 
     # Show only file window, not full GUI.
