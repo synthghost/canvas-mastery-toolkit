@@ -136,7 +136,7 @@ class GradingManager(object):
     # Construct a dataframe and add columns for opportunity counts.
     df_flat = pd.DataFrame(data, columns=columns)
     df_pivot = df_flat.pivot(columns=['outcome', 'assignment'], index='student', values='score')
-    opportunity_counts = df_pivot.groupby(axis='columns', level=0, sort=False).count()
+    opportunity_counts = df_pivot.T.groupby(level=0, sort=False).count().T
     df_pivot.columns = df_pivot.columns.map(': '.join)
     df_counts = df_pivot.join(opportunity_counts)
 

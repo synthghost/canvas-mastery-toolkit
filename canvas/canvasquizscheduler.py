@@ -141,7 +141,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
 
     # Apply multipliers to dataframe, then merge by row and by column.
     times[:] = np.where(times.notnull(), multipliers, times)
-    df_max = times.groupby(times.index, axis='index').max()
+    df_max = times.groupby(times.index).max()
     sr_max = df_max.max(axis='columns')
 
     extensions = [{
