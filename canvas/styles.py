@@ -14,6 +14,9 @@ inputs = {
   'word_color': colors.foreground['yellow'],
 }
 
+# Console output style
+tab = ' ' * bullets['align']
+
 # Click console error style
 error = {
   'bold': True,

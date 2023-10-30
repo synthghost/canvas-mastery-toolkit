@@ -11,6 +11,7 @@ from canvas.bullet import YesNo
 from canvasapi.quiz import Quiz
 from bullet import Bullet, Input
 from dateutil.parser import parse
+from canvas.configmanager import ConfigManager
 from tkinter.filedialog import askopenfilename
 
 class GradescopeExamReviser(canvas.grader.Grader):
@@ -147,14 +148,27 @@ class GradescopeExamReviser(canvas.grader.Grader):
       print(f'Published revision {revision.title}.')
 
 
-  def get_revision(self, exam: str, question: str) -> Quiz:
-    name = self.parse_question_name(question)
+  def get_revision(self, exam: str, question_name: str) -> Quiz:
+    name = self.parse_question_name(question_name)
 
     title = Input(f'\nEnter name for question: ', default=f'{exam} Revision: {name}' if name else '', **styles.inputs).launch()
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
     _, index = Bullet(f'\nSelect assignment group for revision quiz:', **styles.bullets, choices=list(map(str, groups))).launch()
+    print()
+
+    # Prepare questions.
+    questions = [self.parse_question_tokens(q, {'assignment': exam})
+      for q in self.config.get_revision_questions()]
+
+    texts = f'\n{styles.tab}'.join([f'{i}. {q["question_text"]}' for i, q in enumerate(questions, 1)])
+
+    # Confirm revision question text.
+    confirm = YesNo(f'The revision quiz questions will be:\n{styles.tab}{texts}\nOk? ', default='y', **styles.inputs).launch()
+    if not confirm:
+      print(f'\nPlease update the configured revision questions in {ConfigManager.CONFIG_FILE}, then run again.')
+      exit()
 
     # Create revision.
     revision = self.course.create_quiz({
@@ -168,10 +182,8 @@ class GradescopeExamReviser(canvas.grader.Grader):
     points = []
 
     # Add questions.
-    for question in self.config.get_revision_questions():
-      revision.create_question(question=self.parse_question_tokens(question, {
-        'assignment': exam,
-      }))
+    for question in questions:
+      revision.create_question(question=question)
       points.append(float(question.get('points_possible', 0)))
 
     revision.edit(quiz={'points_possible': sum(points)})
