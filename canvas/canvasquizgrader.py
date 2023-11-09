@@ -144,8 +144,10 @@ class CanvasQuizGrader(canvas.grader.Grader):
       # When no ratings have been assigned, ask the user for the minimum
       # max-score bound, which could be less than or equal to the max score.
       if len(score_map) == 0:
-        while (value := self.ask_score_threshold(text, max_points)) > max_points or value <= 0:
-          print(f'The threshold must be positive and no greater than the maximum score, {max_points}.\n')
+        while (value := self.ask_score_threshold(text, max_points)) <= 0:
+          print('The threshold must be positive.\n')
+        if value > max_points:
+          print(f'Warning: the threshold is greater than the maximum score, {max_points}.\n')
         score_map[value] = r['points']
         continue
 
