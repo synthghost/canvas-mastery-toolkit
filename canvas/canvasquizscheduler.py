@@ -39,7 +39,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
   def do_checkpoints(self) -> None:
     print('Now assigning Canvas checkpoint opportunities')
 
-    quiz = self.get_quiz(check_unpublished=True)
+    quiz = self.get_quiz(check_unpublished=False)
 
     outcome = self.get_learning_outcome()
 
