@@ -2,7 +2,9 @@ import re
 import math
 import getpass
 import keyring
+import logging
 
+from os import path
 from canvasapi import Canvas
 from canvasapi.course import Course, Folder
 from canvas.configcourse import ConfigCourse
@@ -121,5 +123,18 @@ class CourseManager:
   def _connect(self, token) -> None:
     canvas = Canvas(self.config.get('canvas_url').rstrip('/'), token)
     canvas.get_current_user()
+    self._set_logging()
     self.canvas = canvas
     print('Connected to Canvas.')
+
+
+  def _set_logging(self) -> None:
+    logger = logging.getLogger('canvasapi')
+    level = self.config.get('canvas_log_level')
+    handler = logging.FileHandler(path.join(self.config.get('canvas_log_dir'), 'canvas.log'))
+    formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s')
+
+    handler.setLevel(level)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(level)

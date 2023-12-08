@@ -1,6 +1,6 @@
-import os
 import click
 
+from os import path
 from bullet import Input
 from canvas import styles
 from configparser import ConfigParser
@@ -12,7 +12,7 @@ class ConfigManager:
   CORE = 'core'
   CONFIG_FILE = '.canvas-toolkit-config'
 
-  config_path = os.path.join(os.path.expanduser('~'), CONFIG_FILE)
+  config_path = path.join(path.expanduser('~'), CONFIG_FILE)
 
   def __init__(self) -> None:
     self.config = ConfigParser()
@@ -22,7 +22,7 @@ class ConfigManager:
 
 
   def install(self) -> None:
-    if os.path.isfile(self.config_path):
+    if path.isfile(self.config_path):
       click.echo(f'Global configuration file already installed at {self.config_path}')
       return
 
@@ -44,6 +44,12 @@ class ConfigManager:
       # tokens can be generated in Canvas > Account > Settings.
       # Click "New Access Token" under Approved Integrations.
       'canvas_api_token': '',
+
+      # A path to the directory where logs will be stored
+      # and a log severity level, which can be one of:
+      # CRITICAL, FATAL, ERROR, WARNING, INFO, DEBUG.
+      'canvas_log_dir': path.expanduser('~'),
+      'canvas_log_level': 'ERROR',
     }
 
     self.save()
