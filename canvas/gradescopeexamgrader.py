@@ -4,9 +4,7 @@ import canvas.grader
 
 from os import path
 from tkinter import Tk
-from bullet import Bullet
-from canvas import styles
-from canvas.bullet import YesNo
+from canvas.cli import confirm, menu
 from canvasapi.assignment import Assignment
 from tkinter.filedialog import askopenfilename
 
@@ -103,7 +101,7 @@ class GradescopeExamGrader(canvas.grader.Grader):
 
   def push_grades(self, receptacle: Assignment, submissions) -> None:
     push_notice = 'This will publish the receptacle assignment. ' if not receptacle.published else ''
-    push_grades = YesNo(f'Upload receptacle scores to Canvas? {push_notice}', default='n', **styles.inputs).launch()
+    push_grades = confirm(f'Upload receptacle scores to Canvas? {push_notice}', default='n')
     if not push_grades:
       return
 
@@ -167,10 +165,10 @@ class GradescopeExamGrader(canvas.grader.Grader):
       # Make dictionary numerically subscriptable, yielding [(key, value), ...].
       choices = list(outcomes.items())
 
-      _, index = Bullet(
-        f'\nQuestion "{column}" does not have a match. Select an outcome:', **styles.bullets,
-        choices=[str(c[1]['title']) for c in choices],
-      ).launch()
+      index = menu(
+        f'\nQuestion "{column}" does not have a match. Select an outcome:',
+        [str(c[1]['title']) for c in choices],
+      )
 
       key = choices[index][0]
       print(f'\nQuestion "{column}" will map to outcome "{outcomes[key]["title"]}"')

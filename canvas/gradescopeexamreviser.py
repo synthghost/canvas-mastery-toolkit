@@ -7,10 +7,9 @@ from tkinter import Tk
 from canvas import styles
 from string import Template
 from dateutil.tz import gettz
-from canvas.bullet import YesNo
 from canvasapi.quiz import Quiz
-from bullet import Bullet, Input
 from dateutil.parser import parse
+from canvas.cli import confirm, menu, text
 from canvas.configmanager import ConfigManager
 from tkinter.filedialog import askopenfilename
 
@@ -36,15 +35,18 @@ class GradescopeExamReviser(canvas.grader.Grader):
     print(f'Found {scores.columns.size} questions and {scores.index.size} students eligible for revisions.')
     print()
 
-    if not YesNo(f'Make revisions? ', default='y', **styles.inputs).launch():
+    if not confirm('Make revisions? '):
       print('Nothing left to do.')
       exit()
 
-    exam = Input(f'\nEnter name for exam. This will be used as the prefix for all revision quizzes: ', **styles.inputs, strip=True).launch().strip(':')
+    print()
+    exam = text(
+      'Enter name for exam. This will be used as the prefix for all revision quizzes: ', strip=True,
+    ).strip(':')
 
     while not scores.empty:
       columns = scores.columns.values.tolist()
-      _, index = Bullet(f'\nSelect question for revision:', **styles.bullets, choices=list(map(str, columns))).launch()
+      index = menu('\nSelect question for revision:', list(map(str, columns)))
       print()
       self.process_question(exam, scores.pop(columns[index]))
 
@@ -94,7 +96,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
 
 
   def process_question(self, exam, column):
-    print(f'Question:', column.name)
+    print('Question:', column.name)
 
     students = column.dropna().index.values.tolist()
 
@@ -109,7 +111,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
     due_iso = None
 
     while not due_iso:
-      due = Input(f'Enter due date for revision (mm/dd/yyyy hh:mm:ss): ', **styles.inputs).launch()
+      due = text('Enter due date for revision (mm/dd/yyyy hh:mm:ss): ')
       try:
         due_parsed = parse(due, ignoretz=True)
       except Exception:
@@ -118,7 +120,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
         continue
       due_zoned = due_parsed.replace(tzinfo=gettz('America/New_York'))
       due_human = due_zoned.strftime('%m/%d/%Y at %H:%M:%S')
-      if not YesNo(f'Due date will be {due_human}. Ok? ', default='y', **styles.inputs).launch():
+      if not confirm(f'Due date will be {due_human}. Ok? '):
         print()
         continue
       due_iso = due_zoned.isoformat(timespec='seconds')
@@ -137,7 +139,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
     print()
 
     # Publish revision quiz.
-    publish = YesNo(f'Publish revision quiz? ', default='y', **styles.inputs).launch()
+    publish = confirm('Publish revision quiz? ')
 
     revision.edit(quiz={
       'only_visible_to_overrides': True,
@@ -151,11 +153,11 @@ class GradescopeExamReviser(canvas.grader.Grader):
   def get_revision(self, exam: str, question_name: str) -> Quiz:
     name = self.parse_question_name(question_name)
 
-    title = Input(f'\nEnter name for question: ', default=f'{exam} Revision: {name}' if name else '', **styles.inputs).launch()
+    title = text('\nEnter name for question: ', default=f'{exam} Revision: {name}' if name else '')
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
-    _, index = Bullet(f'\nSelect assignment group for revision quiz:', **styles.bullets, choices=list(map(str, groups))).launch()
+    index = menu('\nSelect assignment group for revision quiz:', list(map(str, groups)))
     print()
 
     # Prepare questions.
@@ -165,8 +167,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
     texts = f'\n{styles.tab}'.join([f'{i}. {q["question_text"]}' for i, q in enumerate(questions, 1)])
 
     # Confirm revision question text.
-    confirm = YesNo(f'The revision quiz questions will be:\n{styles.tab}{texts}\nOk? ', default='y', **styles.inputs).launch()
-    if not confirm:
+    if not confirm(f'The revision quiz questions will be:\n{styles.tab}{texts}\nOk? '):
       print(f'\nPlease update the configured revision questions in {ConfigManager.CONFIG_FILE}, then run again.')
       exit()
 

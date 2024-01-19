@@ -1,9 +1,8 @@
 import time
 
-from canvas.bullet import YesNo
-from bullet import Bullet, Input
-from canvas import CourseManager, styles
+from canvas import CourseManager
 from canvasapi.progress import Progress
+from canvas.cli import confirm, menu, text
 from canvasapi.assignment import Assignment
 from canvas.configcourse import ConfigCourse
 
@@ -28,6 +27,8 @@ class Grader(object):
 
   def __init__(self, config: ConfigCourse) -> None:
     self.config = config
+
+    print("Starting...")
 
     # Connect to Canvas course.
     self.course_manager = CourseManager(self.config)
@@ -58,7 +59,7 @@ class Grader(object):
 
   def get_mastery(self, receptacle: Assignment) -> Assignment:
     # Use same assignment for mastery?
-    mastery_same = YesNo('Use the same assignment for mastery? ', default='y', **styles.inputs).launch()
+    mastery_same = confirm('Use the same assignment for mastery? ')
     print()
 
     if mastery_same:
@@ -81,22 +82,24 @@ class Grader(object):
       raise ValueError('Type must be defined in assignment_defaults.')
 
     select_choice = 'Select from list'
-    selection, _ = Bullet(
-      f'\nSelect existing {type} assignment or create new?', **styles.bullets, choices=[select_choice, 'Create new'],
-    ).launch()
+    choices = [select_choice, 'Create new']
+    index = menu(
+      f'\nSelect existing {type} assignment or create new?', choices,
+    )
+    selection = choices[index]
 
     # Select an existing assignment.
     if selection == select_choice:
-      _, index = Bullet(f'\nSelect {type} assignment:', **styles.bullets, choices=list(map(str, collection))).launch()
+      index = menu(f'\nSelect {type} assignment:', list(map(str, collection)))
       print(f'\n{str(type).capitalize()}:', collection[index])
       return collection[index]
 
     # Create a new assignment.
-    name = Input(f'\nEnter name for new {type}: ', default=default, **styles.inputs).launch()
+    name = text(f'\nEnter name for new {type}: ', default=default)
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
-    _, index = Bullet(f'\nSelect assignment group for new {type}:', **styles.bullets, choices=list(map(str, groups))).launch()
+    index = menu(f'\nSelect assignment group for new {type}:', list(map(str, groups)))
 
     data = {
       **self.assignment_defaults[type],
@@ -133,7 +136,7 @@ class Grader(object):
     # Push scores to Canvas.
     print()
     push_notice = 'This will publish the mastery assignment. ' if not mastery.published else ''
-    push_grades = YesNo(f'Upload mastery scores to Canvas? {push_notice}', default='y', **styles.inputs).launch()
+    push_grades = confirm(f'Upload mastery scores to Canvas? {push_notice}')
 
     if not push_grades:
       print('Nothing left to do.')
@@ -151,7 +154,11 @@ class Grader(object):
     pushed_receptacle = isinstance(self.receptacle_upload_progress, Progress)
 
     # Choose to post receptacle grades.
-    post_receptacle_grades = pushed_receptacle and mastery is not receptacle and YesNo('Post receptacle grades to all students? ', default='y', **styles.inputs).launch()
+    post_receptacle_grades = (
+      pushed_receptacle
+      and mastery is not receptacle
+      and confirm('Post receptacle grades to all students? ')
+    )
     if post_receptacle_grades:
       self.await_upload_progress(self.receptacle_upload_progress)
       self.course_manager.post_grades(receptacle.id, graded_only=True)
@@ -159,7 +166,7 @@ class Grader(object):
       print()
 
     # Choose to post mastery grades.
-    post_mastery_grades = YesNo('Post mastery grades to all students? ', default='y', **styles.inputs).launch()
+    post_mastery_grades = confirm('Post mastery grades to all students? ')
     if post_mastery_grades:
       self.await_upload_progress(progress)
       self.course_manager.post_grades(mastery.id, graded_only=True)

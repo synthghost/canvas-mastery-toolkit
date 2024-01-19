@@ -1,7 +1,8 @@
 import click
 import functools
 
-from canvas import ConfigManager, GradingManager, styles
+from canvas.cli import error, info
+from canvas import ConfigManager, GradingManager
 
 config_manager = ConfigManager()
 grading_manager = GradingManager()
@@ -31,9 +32,9 @@ def config(address, value = None):
   if value is not None:
     return config_manager.set(address, value)
   try:
-    click.echo(config_manager.get(address))
+    info(config_manager.get(address))
   except Exception:
-    click.secho(f'No entry found for "{address}".', **styles.error)
+    error(f'No entry found for "{address}".')
 
 
 @cli.command
@@ -70,7 +71,7 @@ def add(course_name, course_id, folder_id):
 @courses.command
 def list():
   """List Canvas course entries."""
-  click.echo(', '.join(config_manager.get_courses()))
+  info(', '.join(config_manager.get_courses()))
 
 
 @courses.command

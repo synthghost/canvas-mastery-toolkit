@@ -1,5 +1,3 @@
-from bullet import colors
-
 # Bullet multiple choice style
 bullets = {
   'align': 3,
@@ -11,7 +9,8 @@ bullets = {
 
 # Bullet text input style
 inputs = {
-  'word_color': colors.foreground['yellow'],
+  # From bullet.colors.
+  'word_color': '\u001b[34m',
 }
 
 # Console output style

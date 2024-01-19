@@ -1,8 +1,6 @@
 import canvas.grader
 
-from bullet import Bullet
-from canvas import styles
-from canvas.bullet import YesNo
+from canvas.cli import confirm, menu
 from canvasapi.assignment import Assignment
 
 class GradescopeQuizGrader(canvas.grader.Grader):
@@ -55,7 +53,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
 
     # Publish receptacle assignment.
     if not receptacle.published:
-      if not YesNo(f'Publish receptacle? This is needed to sync Gradescope. ', default='y', **styles.inputs).launch():
+      if not confirm('Publish receptacle? This is needed to sync Gradescope. '):
         print('\nCannot proceed without syncing Gradescope.')
         exit()
 
@@ -92,7 +90,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
 
     # Replace rubric if has rubric?
     replace_notice = f'The mastery assignment has rubric "{settings.get("title")}". Replace rubric? '
-    replace_rubric = rubric and YesNo(replace_notice, default='n', **styles.inputs).launch()
+    replace_rubric = rubric and confirm(replace_notice, default='n')
     print()
 
     # Use or select rubric.
@@ -111,7 +109,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
       exit()
 
     # Select pre-made rubric.
-    _, index = Bullet(f'\nSelect a rubric:', **styles.bullets, choices=list(map(str, rubrics))).launch()
+    index = menu('\nSelect a rubric:', list(map(str, rubrics)))
     print('\nRubric:', rubrics[index])
     rubric = rubrics[index]
 

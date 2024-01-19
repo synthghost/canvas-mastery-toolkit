@@ -3,8 +3,7 @@ import canvas.grader
 
 from os import path
 from tkinter import Tk
-from bullet import Bullet
-from canvas import styles
+from canvas.cli import menu
 from canvasapi.assignment import Assignment
 from tkinter.filedialog import asksaveasfilename
 
@@ -48,7 +47,7 @@ class CanvasQuizReviser(canvas.grader.Grader):
     quizzes = [a for a in self.get_assignments()
       if a.published and a.is_quiz_assignment and a.grading_type == 'points']
 
-    _, index = Bullet(f'\nSelect quiz:', **styles.bullets, choices=list(map(str, quizzes))).launch()
+    index = menu('\nSelect quiz:', list(map(str, quizzes)))
     print('\nQuiz:', quizzes[index])
     print()
 

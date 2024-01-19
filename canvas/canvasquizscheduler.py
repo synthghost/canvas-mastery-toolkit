@@ -6,15 +6,13 @@ import canvas.grader
 
 from os import path
 from tkinter import Tk
-from canvas import styles
 from dateutil.tz import gettz
 from canvasapi.quiz import Quiz
 from collections import Counter
-from bullet import Bullet, Input
 from dateutil.parser import parse
-from canvas.bullet import Numbers, YesNo
 from canvasapi.exceptions import BadRequest
 from tkinter.filedialog import askopenfilename
+from canvas.cli import confirm, menu, number, text
 
 class CanvasQuizScheduler(canvas.grader.Grader):
 
@@ -26,7 +24,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
     self.assign_extra_time(quiz)
 
     # Publish quiz.
-    if not quiz.published and YesNo(f'Publish quiz? ', default='y', **styles.inputs).launch():
+    if not quiz.published and confirm('Publish quiz? '):
       quiz.edit(quiz={
         'published': True,
       })
@@ -43,9 +41,11 @@ class CanvasQuizScheduler(canvas.grader.Grader):
 
     outcome = self.get_learning_outcome()
 
-    checks = Numbers(
-      f'Enter number of checks needed for outcome mastery: ', **styles.inputs,
-    ).launch(default=getattr(outcome, 'calculation_int', None))
+    checks = number(
+      'Enter number of checks needed for outcome mastery: ',
+      default=getattr(outcome, 'calculation_int', None),
+      type=int,
+    )
     print()
 
     # Find students with full scores on outcome opportunities.
@@ -69,7 +69,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
 
     # Set revision due date.
     while not due_iso:
-      due = Input(f'Enter due date for revision (mm/dd/yyyy hh:mm:ss): ', **styles.inputs).launch()
+      due = text('Enter due date for revision (mm/dd/yyyy hh:mm:ss): ')
       try:
         due_parsed = parse(due, ignoretz=True)
       except Exception:
@@ -78,7 +78,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
         continue
       due_zoned = due_parsed.replace(tzinfo=gettz('America/New_York'))
       due_human = due_zoned.strftime('%m/%d/%Y at %H:%M:%S')
-      if not YesNo(f'Due date will be {due_human}. Ok? ', default='y', **styles.inputs).launch():
+      if not confirm(f'Due date will be {due_human}. Ok? '):
         print()
         continue
       due_iso = due_zoned.isoformat(timespec='seconds')
@@ -107,7 +107,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
       self.assign_extra_time(quiz, eligible_students)
 
     # Publish quiz.
-    publish = YesNo(f'Publish quiz? ', default='y', **styles.inputs).launch()
+    publish = confirm('Publish quiz? ')
 
     quiz.edit(quiz={
       'only_visible_to_overrides': True,
@@ -169,7 +169,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
       print(f'\nNo {limited}quizzes found! Cannot proceed.')
       exit()
 
-    _, index = Bullet(f'\nSelect quiz:', **styles.bullets, choices=list(map(str, quizzes))).launch()
+    index = menu('\nSelect quiz:', list(map(str, quizzes)))
     print('\nQuiz:', quizzes[index])
     print()
 
@@ -194,10 +194,7 @@ class CanvasQuizScheduler(canvas.grader.Grader):
     choices = list(outcomes.items())
 
     # Select outcome.
-    _, index = Bullet(
-      f'Select a learning outcome:', **styles.bullets,
-      choices=[str(c[1]) for c in choices],
-    ).launch()
+    index = menu('Select a learning outcome:', [str(c[1]) for c in choices])
 
     outcome = self.get_outcome(choices[index][0])
     print('\nLearning Outcome:', getattr(outcome, 'title', None))

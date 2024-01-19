@@ -1,8 +1,5 @@
-import click
-
 from os import path
-from bullet import Input
-from canvas import styles
+from canvas.cli import error, info, text
 from configparser import ConfigParser
 from canvas.configcourse import ConfigCourse
 
@@ -23,11 +20,11 @@ class ConfigManager:
 
   def install(self) -> None:
     if path.isfile(self.config_path):
-      click.echo(f'Global configuration file already installed at {self.config_path}')
+      info(f'Global configuration file already installed at {self.config_path}')
       return
 
     # Ask for Canvas URL.
-    canvas_url = Input(f'Enter Canvas base URL: ', **styles.inputs).launch()
+    canvas_url = text('Enter Canvas base URL: ')
 
     self.config[self.CORE] = {
       # The institution's Canvas base URL.
@@ -54,7 +51,7 @@ class ConfigManager:
 
     self.save()
 
-    click.echo(f'Generated global configuration file at {self.config_path}')
+    info(f'Generated global configuration file at {self.config_path}')
 
 
   def get(self, address: str) -> str:
@@ -77,14 +74,14 @@ class ConfigManager:
     sections = self.get_courses()
     section = sections[0] if name is None and len(sections) > 0 else name
     if not self.course_name_valid_and_exists(section):
-      click.secho(f'No course found for "{section}".', **styles.error)
+      error(f'No course found for "{section}".')
       exit()
     return ConfigCourse(self, section)
 
 
   def add_course(self, name: str, canvas_id: str, folder_id: str) -> None:
     if self.course_name_valid_and_exists(name):
-      click.secho(f'Course "{name}" already exists. Try a different name.', **styles.error)
+      error(f'Course "{name}" already exists. Try a different name.')
       exit()
 
     self.config[name] = {
@@ -105,12 +102,12 @@ class ConfigManager:
     course = ConfigCourse(self, name)
     course.add_revision_questions()
 
-    click.echo(f'Added course {name} ({canvas_id}).')
+    info(f'Added course {name} ({canvas_id}).')
 
 
   def remove_course(self, name: str) -> None:
     if not self.course_name_valid_and_exists(name):
-      click.secho(f'No course found for "{name}".', **styles.error)
+      error(f'No course found for "{name}".')
       exit()
 
     self.config.remove_section(name)
@@ -120,7 +117,7 @@ class ConfigManager:
     course = ConfigCourse(self, name)
     course.remove_revision_questions()
 
-    click.echo(f'Removed course {name}.')
+    info(f'Removed course {name}.')
 
 
   def save(self) -> None:
@@ -136,9 +133,9 @@ class ConfigManager:
 
   def course_name_valid_and_exists(self, name: str) -> bool:
     if name.lower() == self.CORE:
-      click.secho(f'Cannot use "{self.CORE}" as a course name.', **styles.error)
+      error(f'Cannot use "{self.CORE}" as a course name.')
       exit()
     if '.' in name:
-      click.secho('Course name cannot contain "." character.', **styles.error)
+      error('Course name cannot contain "." character.')
       exit()
     return self.config.has_section(name)

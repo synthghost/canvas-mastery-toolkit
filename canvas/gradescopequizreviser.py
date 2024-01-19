@@ -3,10 +3,9 @@ import canvas.grader
 from canvas import styles
 from string import Template
 from dateutil.tz import gettz
-from canvas.bullet import YesNo
 from canvasapi.quiz import Quiz
-from bullet import Bullet, Input
 from dateutil.parser import parse
+from canvas.cli import confirm, menu, text
 from canvasapi.assignment import Assignment
 from canvas.configmanager import ConfigManager
 
@@ -33,7 +32,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
     print(f'Found {len(students)} students eligible for revisions.')
     print()
 
-    if not YesNo(f'Make a revision? ', default='y', **styles.inputs).launch():
+    if not confirm('Make a revision? '):
       print('Nothing left to do.')
       exit()
 
@@ -44,7 +43,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
 
     # Set revision due date.
     while not due_iso:
-      due = Input(f'Enter due date for revision (mm/dd/yyyy hh:mm:ss): ', **styles.inputs).launch()
+      due = text('Enter due date for revision (mm/dd/yyyy hh:mm:ss): ')
       try:
         due_parsed = parse(due, ignoretz=True)
       except Exception:
@@ -53,7 +52,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
         continue
       due_zoned = due_parsed.replace(tzinfo=gettz('America/New_York'))
       due_human = due_zoned.strftime('%m/%d/%Y at %H:%M:%S')
-      if not YesNo(f'Due date will be {due_human}. Ok? ', default='y', **styles.inputs).launch():
+      if not confirm(f'Due date will be {due_human}. Ok? '):
         print()
         continue
       due_iso = due_zoned.isoformat(timespec='seconds')
@@ -72,7 +71,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
     print()
 
     # Publish revision quiz.
-    publish = YesNo(f'Publish revision quiz? ', default='y', **styles.inputs).launch()
+    publish = confirm('Publish revision quiz? ')
 
     revision.edit(quiz={
       'only_visible_to_overrides': True,
@@ -89,8 +88,8 @@ class GradescopeQuizReviser(canvas.grader.Grader):
     collection = [a for a in self.get_assignments()
       if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment]
 
-    _, index = Bullet(f'\nSelect receptacle assignment:', **styles.bullets, choices=list(map(str, collection))).launch()
-    print(f'\nReceptacle:', collection[index])
+    index = menu('\nSelect receptacle assignment:', list(map(str, collection)))
+    print('\nReceptacle:', collection[index])
     return collection[index]
 
 
@@ -116,11 +115,11 @@ class GradescopeQuizReviser(canvas.grader.Grader):
     name = getattr(receptacle, 'name', None)
     url = getattr(receptacle, 'html_url', None)
 
-    title = Input(f'\nEnter name for revision quiz: ', default=f'{name} Revision' if name else '', **styles.inputs).launch()
+    title = text('\nEnter name for revision quiz: ', default=f'{name} Revision' if name else '')
 
     # Select an assignment group.
     groups = self.course_manager.get_assignment_groups(self.course)
-    _, index = Bullet(f'\nSelect assignment group for revision quiz:', **styles.bullets, choices=list(map(str, groups))).launch()
+    index = menu('\nSelect assignment group for revision quiz:', list(map(str, groups)))
     print()
 
     # Prepare questions.
@@ -130,8 +129,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
     texts = f'\n{styles.tab}'.join([f'{i}. {q["question_text"]}' for i, q in enumerate(questions, 1)])
 
     # Confirm revision question text.
-    confirm = YesNo(f'The revision quiz questions will be:\n{styles.tab}{texts}\nOk? ', default='y', **styles.inputs).launch()
-    if not confirm:
+    if not confirm(f'The revision quiz questions will be:\n{styles.tab}{texts}\nOk? '):
       print(f'\nPlease update the configured revision questions in {ConfigManager.CONFIG_FILE}, then run again.')
       exit()
 

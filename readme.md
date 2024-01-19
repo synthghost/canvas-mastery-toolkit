@@ -10,7 +10,10 @@ This repository contains a toolkit to support implementations of the learning ma
 **Python dependencies**
 - [bullet](https://github.com/bchao1/bullet)
 - [canvasapi](https://pypi.org/project/canvasapi/)
+- [click](https://pypi.org/project/click/)
+- [console-menu](https://pypi.org/project/console-menu/)
 - [keyring](https://pypi.org/project/keyring/)
+- [numpy](https://pypi.org/project/numpy/)
 - [pandas](https://pypi.org/project/pandas/)
 - [python-dateutil](https://pypi.org/project/python-dateutil/)
 

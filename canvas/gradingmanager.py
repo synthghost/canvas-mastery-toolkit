@@ -4,8 +4,8 @@ import pandas as pd
 from os import path
 from tkinter import Tk
 from typing import Self
-from bullet import Bullet
-from canvas import CourseManager, styles
+from canvas.cli import menu
+from canvas import CourseManager
 from canvas.configcourse import ConfigCourse
 from tkinter.filedialog import asksaveasfilename
 from canvas.canvasquizscheduler import CanvasQuizScheduler
@@ -25,22 +25,22 @@ class GradingManager(object):
 
 
   def start_grading(self) -> None:
-    _, grading_index = Bullet('\nWhat kind of ungraded assignment?', **styles.bullets,
-      choices=['Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam'],
-    ).launch()
+    index = menu('\nWhat kind of ungraded assignment?', [
+      'Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam',
+    ])
     print()
 
-    grader = graders[grading_index](self.config)
+    grader = graders[index](self.config)
     grader.do()
 
 
   def start_revisions(self) -> None:
-    _, revision_index = Bullet('\nWhat kind of revision assignment?', **styles.bullets,
-      choices=['Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam'],
-    ).launch()
+    index = menu('\nWhat kind of revision assignment?', [
+      'Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam',
+    ])
     print()
 
-    reviser = revisers[revision_index](self.config)
+    reviser = revisers[index](self.config)
     reviser.do()
 
 

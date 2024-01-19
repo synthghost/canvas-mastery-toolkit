@@ -1,9 +1,7 @@
 import canvas.grader
 
-from bullet import Bullet
-from canvas import styles
-from canvas.bullet import Numbers, YesNo
 from canvasapi.assignment import Assignment
+from canvas.cli import confirm, menu, number
 
 class CanvasQuizGrader(canvas.grader.Grader):
 
@@ -54,7 +52,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
     quizzes = [a for a in self.get_assignments()
       if a.published and a.is_quiz_assignment and a.grading_type == 'points']
 
-    _, index = Bullet(f'\nSelect quiz:', **styles.bullets, choices=list(map(str, quizzes))).launch()
+    index = menu('\nSelect quiz:', list(map(str, quizzes)))
     print('\nQuiz:', quizzes[index])
     print()
 
@@ -83,7 +81,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
 
     # Replace rubric if has rubric?
     replace_notice = f'The mastery assignment has rubric "{settings.get("title")}". Replace rubric? '
-    replace_rubric = rubric and YesNo(replace_notice, default='n', **styles.inputs).launch()
+    replace_rubric = rubric and confirm(replace_notice, default='n')
     print()
 
     # Use or select rubric.
@@ -102,7 +100,7 @@ class CanvasQuizGrader(canvas.grader.Grader):
       exit()
 
     # Select pre-made rubric.
-    _, index = Bullet(f'\nSelect a rubric:', **styles.bullets, choices=list(map(str, rubrics))).launch()
+    index = menu('\nSelect a rubric:', list(map(str, rubrics)))
     print('\nRubric:', rubrics[index])
     rubric = rubrics[index]
 
@@ -169,6 +167,4 @@ class CanvasQuizGrader(canvas.grader.Grader):
 
 
   def ask_score_threshold(self, rating, default = None):
-    return Numbers(
-      f'Enter minimum point threshold for rating "{rating}": ', **styles.inputs,
-    ).launch(default=default)
+    return number(f'Enter minimum point threshold for rating "{rating}": ', default=default)
