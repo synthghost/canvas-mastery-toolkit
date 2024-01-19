@@ -4,6 +4,9 @@ from canvas.configmanager import ConfigManager
 from canvas.coursemanager import CourseManager
 from canvas.gradingmanager import GradingManager
 
+# Dependent on GradingManager
+from canvas.app import App
+
 from canvas.canvasquizgrader import CanvasQuizGrader
 from canvas.canvasquizreviser import CanvasQuizReviser
 from canvas.gradescopeexamgrader import GradescopeExamGrader
