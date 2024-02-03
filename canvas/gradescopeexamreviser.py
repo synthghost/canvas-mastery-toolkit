@@ -15,6 +15,8 @@ from tkinter.filedialog import askopenfilename
 
 class GradescopeExamReviser(canvas.grader.Grader):
 
+  due_date = None
+
   def do(self) -> None:
     print('Now setting revisions for Gradescope exam')
     print()
@@ -110,6 +112,10 @@ class GradescopeExamReviser(canvas.grader.Grader):
     # Set revision due date.
     due_iso = None
 
+    due_previous = self.due_date.strftime('%m/%d/%Y at %H:%M:%S') if self.due_date else None
+    if due_previous and confirm(f'Use previous due date, {due_previous}? '):
+      due_iso = self.due_date.isoformat(timespec='seconds')
+
     while not due_iso:
       due = text('Enter due date for revision (mm/dd/yyyy hh:mm:ss): ')
       try:
@@ -124,6 +130,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
         print()
         continue
       due_iso = due_zoned.isoformat(timespec='seconds')
+      self.due_date = due_zoned
 
     assignment = self.course.get_assignment(revision.assignment_id)
     assignment.create_override(assignment_override={

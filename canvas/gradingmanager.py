@@ -36,7 +36,7 @@ class GradingManager(object):
 
   def start_revisions(self) -> None:
     index = menu('\nWhat kind of revision assignment?', [
-      'Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam',
+      'Canvas Quiz', 'Gradescope Quiz', 'Gradescope Quiz (Multiple)', 'Gradescope Exam',
     ])
     print()
 
