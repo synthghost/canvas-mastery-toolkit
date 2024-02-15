@@ -98,7 +98,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
 
 
   def process_question(self, exam, column):
-    print('Question:', column.name)
+    print('Question:', re.sub(r'^[0-9]+: ', '', str(column.name)))
 
     students = column.dropna().index.values.tolist()
 

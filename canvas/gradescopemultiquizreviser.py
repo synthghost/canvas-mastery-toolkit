@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 
 from os import path
@@ -39,7 +40,7 @@ class GradescopeMultiQuizReviser(GradescopeExamReviser):
 
     while not scores.empty:
       columns = scores.columns.values.tolist()
-      index = menu('\nSelect question for revision:', list(map(str, columns)))
+      index = menu('\nSelect question for revision:', self.get_question_names(columns))
       print()
       self.process_question(quiz, scores.pop(columns[index]))
 
@@ -98,6 +99,9 @@ class GradescopeMultiQuizReviser(GradescopeExamReviser):
       # Drop missing records.
       df_data.drop(df_data[df_data['Status'] == 'Missing'].index, inplace=True)
 
+      # Normalize columns to allow merging.
+      df_data.rename(columns=self.normalize_column, inplace=True)
+
       # Retrieve users.
       users = {user.email: user.id
         for user in self.course.get_users(enrollment_type=['student'])
@@ -115,3 +119,17 @@ class GradescopeMultiQuizReviser(GradescopeExamReviser):
       data.append(df_mapped)
 
     return data
+
+
+  def get_question_names(self, columns):
+    # Remove the question number from each column.
+    return list(map(lambda c: re.sub(r'^[0-9]+: ', '', str(c)), columns))
+
+
+  def normalize_column(self, name):
+    # Only affect numbered question columns.
+    if not re.match(r'^[0-9]+: (.*?) \([0-9.]+ pts\)$', name):
+      return name
+
+    # Change any question number to a constant.
+    return re.sub(r'^[0-9]+:', '0:', name)
