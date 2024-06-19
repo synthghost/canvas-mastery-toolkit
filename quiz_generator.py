@@ -40,7 +40,7 @@ def latexrepl(match):
 
 # Parse LaTeX strings enclosed by $.
 def latex(text):
-  p = re.compile('\${1,2}(.*?)\${1,2}')
+  p = re.compile(r'\${1,2}(.*?)\${1,2}')
 
   return p.sub(latexrepl, text)
 
@@ -92,6 +92,8 @@ def cli(course_name, data_path, delete_quiz, dry_run, question_limit):
   if not 'questions' in data:
     print('No questions to process.')
     exit()
+
+  print(f'Found {len(data["questions"])} questions')
 
   has_figures = data.get('has_figures') == True or data.get('has_figures') == 'true'
 
