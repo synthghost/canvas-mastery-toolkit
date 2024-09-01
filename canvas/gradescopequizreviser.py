@@ -86,7 +86,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
 
   def get_receptacle(self) -> Assignment:
     collection = [a for a in self.get_assignments()
-      if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment]
+      if a.grading_type == 'points' and a.submission_types == ['external_tool'] and not a.is_quiz_assignment]
 
     index = menu('\nSelect receptacle assignment:', list(map(str, collection)))
     print('\nReceptacle:', collection[index])

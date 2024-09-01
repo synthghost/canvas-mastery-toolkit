@@ -47,7 +47,7 @@ class GradescopeQuizGrader(canvas.grader.Grader):
     # Select or create receptacle.
     receptacle = self.select_or_create(
       [a for a in self.get_assignments()
-        if a.grading_type == 'points' and a.submission_types == ['none'] and not a.is_quiz_assignment],
+        if a.grading_type == 'points' and a.submission_types == ['external_tool'] and not a.is_quiz_assignment],
       'receptacle',
     )
 
