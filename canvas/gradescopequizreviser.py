@@ -135,6 +135,7 @@ class GradescopeQuizReviser(canvas.grader.Grader):
 
     # Create revision.
     revision = self.course.create_quiz({
+      'allowed_attempts': -1,
       'assignment_group_id': getattr(groups[index], 'id', ''),
       'description': f'Revision for <a href="{url}">{name}</a>.' if name and url else '',
       'quiz_type': 'assignment',

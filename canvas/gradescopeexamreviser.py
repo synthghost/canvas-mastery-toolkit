@@ -180,6 +180,7 @@ class GradescopeExamReviser(canvas.grader.Grader):
 
     # Create revision.
     revision = self.course.create_quiz({
+      'allowed_attempts': -1,
       'assignment_group_id': getattr(groups[index], 'id', ''),
       'description': f'Revision for {exam}, question {name}.' if name else '',
       'quiz_type': 'assignment',
