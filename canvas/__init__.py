@@ -13,6 +13,7 @@ from canvas.gradescopeexamgrader import GradescopeExamGrader
 from canvas.gradescopequizgrader import GradescopeQuizGrader
 from canvas.gradescopeexamreviser import GradescopeExamReviser
 from canvas.gradescopequizreviser import GradescopeQuizReviser
+from canvas.gradescopemultiquizgrader import GradescopeMultiQuizGrader
 from canvas.gradescopemultiquizreviser import GradescopeMultiQuizReviser
 
 from canvas import gradingmanager as _gradingmanager
@@ -20,6 +21,7 @@ from canvas import gradingmanager as _gradingmanager
 _gradingmanager.graders = [
   CanvasQuizGrader,
   GradescopeQuizGrader,
+  GradescopeMultiQuizGrader,
   GradescopeExamGrader,
 ]
 

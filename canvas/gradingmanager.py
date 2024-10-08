@@ -26,7 +26,7 @@ class GradingManager(object):
 
   def start_grading(self) -> None:
     index = menu('\nWhat kind of ungraded assignment?', [
-      'Canvas Quiz', 'Gradescope Quiz', 'Gradescope Exam',
+      'Canvas Quiz', 'Gradescope Quiz', 'Gradescope Quiz (Multiple)', 'Gradescope Exam',
     ])
     print()
 

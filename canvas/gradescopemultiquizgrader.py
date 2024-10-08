@@ -3,48 +3,52 @@ import pandas as pd
 
 from os import path
 from tkinter import Tk
-from canvas.cli import confirm, menu, text
 from tkinter.filedialog import askopenfilenames
-from canvas.gradescopeexamreviser import GradescopeExamReviser
+from canvas.gradescopeexamgrader import GradescopeExamGrader
 
-class GradescopeMultiQuizReviser(GradescopeExamReviser):
+class GradescopeMultiQuizGrader(GradescopeExamGrader):
 
   def do(self) -> None:
-    print('Now setting revisions for Gradescope quiz (multiple)')
-    print()
+    print('Now grading Gradescope quiz (multiple)')
 
+    receptacle = None
     submissions = None
 
-    # Repeat submissions selection until we have submissions.
+    # Repeat receptacle or submissions selection until we have submissions.
     while not isinstance(submissions, pd.DataFrame) or submissions.empty:
+      receptacle = self.get_receptacle()
       submissions = self.get_all_scores()
 
-    # Find scores eligible for revisions.
-    scores = self.get_applicable_scores(submissions)
+    # Push scores to receptacle?
+    self.push_grades(receptacle, submissions)
 
-    if scores.empty:
-      print('No quiz questions require revisions.')
-      exit()
+    mastery, rubric = self.get_rubric(receptacle, submissions)
 
-    print(f'Found {scores.columns.size} questions and {scores.index.size} students eligible for revisions.')
-    print()
+    grades = {}
 
-    if not confirm('Make revisions? '):
-      print('Nothing left to do.')
-      exit()
+    # Calculate rubric scores.
+    for user_id, submission in submissions.iterrows():
+      score = {
+        'posted_grade': submission['Total Score'],
+        'rubric_assessment': {},
+      }
 
-    print()
-    quiz = text(
-      'Enter a name for the quiz. This will be used as the prefix for all revision quizzes: ', strip=True,
-    ).strip(':')
+      for criterion in rubric:
+        question = next(m['question'] for m in self.matches.values() if m['outcome'] == criterion['description'])
+        try:
+          rating = next(r for r in criterion['ratings'] if r['points'] == submission.loc[question])
+        except StopIteration:
+          print('No rating match for score:', submission.loc[question])
+          continue
 
-    while not scores.empty:
-      columns = scores.columns.values.tolist()
-      index = menu('\nSelect question for revision:', self.get_question_names(columns))
-      print()
-      self.process_question(quiz, scores.pop(columns[index]))
+        score['rubric_assessment'][criterion['id']] = {
+          'rating_id': rating['id'],
+          'points': rating['points'],
+        }
 
-    print('\nDone.')
+      grades[user_id] = score
+
+    self.upload(receptacle, mastery, grades)
 
 
   def get_all_scores(self):
@@ -77,7 +81,7 @@ class GradescopeMultiQuizReviser(GradescopeExamReviser):
       return None
 
     if submissions.index.has_duplicates:
-      print(f'Selected files contain duplicate student emails. Please correct and try again.')
+      print('Selected files contain duplicate student emails. Please correct and try again.')
       data_paths = set()
       return None
 
@@ -119,11 +123,6 @@ class GradescopeMultiQuizReviser(GradescopeExamReviser):
       data.append(df_mapped)
 
     return data
-
-
-  def get_question_names(self, columns):
-    # Remove the question number from each column.
-    return list(map(lambda c: re.sub(r'^[0-9]+: ', '', str(c)), columns))
 
 
   def normalize_column(self, name):
